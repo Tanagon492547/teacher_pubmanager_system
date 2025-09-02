@@ -1,9 +1,9 @@
 "use client";
-import TableFeature from "@/components/articlemanagements/TableFeature";
 import { Pagination } from "@mui/material";
 import { usePathname } from 'next/navigation'
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import PaginationFeature from "@/components/PaginationFeature"
+import Loading from "../loading";
 
 //จำลองข้อมูล API
 const mockData = [
@@ -53,9 +53,8 @@ const ArticlemanagementPage = () => {
             </div>  
           </div>
         </div>
-
+      
         <PaginationFeature pathName={pathName} mockData={mockData} rowsValue={11} />
-        
       </div>
     </div>
   );
