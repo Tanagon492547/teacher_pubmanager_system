@@ -4,7 +4,6 @@ import "./globals.css";
 import HeaderPage from "@/components/HeaderPage";
 import { usePathname } from 'next/navigation'
 import Navbar from "@/components/navigations/Navbar";
-import { useEffect } from "react";
 
 
 const RootLayout = ({ children }: Readonly<{ children: React.ReactNode; }>) => {
@@ -12,10 +11,6 @@ const RootLayout = ({ children }: Readonly<{ children: React.ReactNode; }>) => {
   const userType = 'admin'; // เปลี่ยนเป็น 'teacher' , 'staff' 'admin' ตามที่ต้องการ
 
   const login = true; // เปลี่ยนเป็น true เพื่อแสดง Navbar
-
-  useEffect(() => {
-    document.documentElement.classList.add('light');
-  }, []);
 
   return (
     <html lang="en">
