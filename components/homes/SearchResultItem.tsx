@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import DownloadCard from "../DownloadCard";
 
 type Users = {
   id: string  | undefined;
@@ -32,9 +33,7 @@ const SearchResultItem = ({id, title, athor, field, offset, url}: Users)  => {
                   Officia esse cum quibusdam vitae nostrum odit, mollitia reprehenderit, nobis obcaecati qui pariatur! Soluta beatae iste harum, enim ut quos ipsam ab aspernatur distinctio? Enim vel voluptatibus quidem debitis esse.
                   Fugiat provident itaque nobis adipisci! Necessitatibus, cum at praesentium nobis fugit temporibus nesciunt sequi tempora eos sed ab non dignissimos vitae corporis illum, ea pariatur. Omnis voluptate obcaecati quisquam aliquid?</p>
                   <div className="flex flex-row gap-2 ">
-                    <button className={`btn btn-success btn-sm text-lg rounded-sm px-10 py-5 ${url === undefined ? 'btn-disabled w-(--width-button-lock)' : ''}`}>
-                      {url === undefined ?  (<i className="fa-solid fa-lock"></i>) : ('Download PDF')}
-                    </button>
+                    <DownloadCard url={url} />
                     <Link href={`/${id}`}>
                       <button className="btn btn-outline btn-sm text-lg rounded-sm px-10 py-5"><p className="text-black/60">ดูรายละเอียด</p></button>
                     </Link>
