@@ -1,6 +1,8 @@
 import Image from "next/image";
+import Link from "next/link";
 
 type Users = {
+  id: string  | undefined;
   title: string | undefined;
   athor: string | undefined;
   field: string | undefined;
@@ -8,7 +10,7 @@ type Users = {
   url: string | undefined;
 }
 
-const SearchResultItem = ({title, athor, field, offset, url}: Users)  => {
+const SearchResultItem = ({id, title, athor, field, offset, url}: Users)  => {
   return (
     <td className="w-full  flex flex-col my-1">
         <div className="w-full flex flex-row border-1 border-(--color-border)/20 rounded-lg p-5 gap-5 h-(--1xl)">
@@ -33,7 +35,9 @@ const SearchResultItem = ({title, athor, field, offset, url}: Users)  => {
                     <button className={`btn btn-success btn-sm text-lg rounded-sm px-10 py-5 ${url === undefined ? 'btn-disabled w-(--width-button-lock)' : ''}`}>
                       {url === undefined ?  (<i className="fa-solid fa-lock"></i>) : ('Download PDF')}
                     </button>
-                    <button className="btn btn-outline btn-sm text-lg rounded-sm px-10 py-5"><p className="text-black/60">ดูรายละเอียด</p></button>
+                    <Link href={`/${id}`}>
+                      <button className="btn btn-outline btn-sm text-lg rounded-sm px-10 py-5"><p className="text-black/60">ดูรายละเอียด</p></button>
+                    </Link>
                   </div>
                 </div>
               </div>

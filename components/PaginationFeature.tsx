@@ -87,7 +87,7 @@ const paginationFeature = ({ mockData, pathName, rowsValue }: data) => {
                 {/* slice เเบ่งหน้า */}
                 {varlueResult.map((value, key) => (
                   <tr key={key} className="w-full">
-                    <SearchResultItem title={value.title} athor={value.athor} field={value.field} offset={value.offset} url={value.url} />
+                    <SearchResultItem id={value.id} title={value.title} athor={value.athor} field={value.field} offset={value.offset} url={value.url} />
                   </tr>
                 ))}
               </tbody>

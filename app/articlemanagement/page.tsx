@@ -1,9 +1,6 @@
 "use client";
-import { Pagination } from "@mui/material";
 import { usePathname } from 'next/navigation'
-import { Suspense, useState } from "react";
 import PaginationFeature from "@/components/PaginationFeature"
-import Loading from "../loading";
 
 //จำลองข้อมูล API
 const mockData = [
