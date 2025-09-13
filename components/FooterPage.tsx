@@ -1,6 +1,7 @@
 const FooterPage = () => {
   return (
-    <footer className="footer sm:footer-horizontal bg-(--color-primary) text-(--color-base-herder) p-10">
+    <div className="w-full h-fit flex justify-center items-center bg-(--color-primary) px-4">
+      <footer className="footer sm:footer-horizontal  text-(--color-base-herder) py-10 max-w-(--8xl)">
           <aside>
             <svg
               
@@ -39,7 +40,8 @@ const FooterPage = () => {
             <a className="link link-hover">Privacy policy</a>
             <a className="link link-hover">Cookie policy</a>
           </nav>
-        </footer>
+    </footer>
+    </div>
   )
 };
 
