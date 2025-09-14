@@ -1,11 +1,12 @@
 import { Pagination } from "@mui/material";
 import TableFeature from "./articlemanagements/TableFeature";
-import { Suspense, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import SearchResultItem from "./homes/SearchResultItem";
 import HistiryTableFeature from "./myhistorys/HistiryTableFeature";
 import TeacherArticeTableFeature from "./articlevalidations/TeacherArticeTableFeature";
 import ManagementTableFeature from "./usermanagements/ManagementTableFeature";
-import Loading from "@/app/loading";
+// Note: No Suspense/Loading wrapper needed; this component is synchronous client-side
+
 
 type ArticleRow = {
   หัวข้อ: string;
@@ -147,11 +148,12 @@ const PaginationFeatureComponent = ({ mockData, pathName, rowsValue }: data) => 
       ? mockData
       : Object.values(mockData as Record<string, unknown>);
     setDataList(nextList);
-    setTablePage(1);
+    // reset page only if needed to reduce extra rerenders
+    setTablePage((p) => (p !== 1 ? 1 : p));
   }, [mockData]);
 
   // ฟังก์ชันลบรายการเฉพาะหน้า /articlemanagement เท่านั้น
-  const handleDelete = (row: unknown) => {
+  const handleDelete = useCallback((row: unknown) => {
     if (pathName !== '/articlemanagement') return;
     if (!isArticleRow(row)) return;
     // ลบจาก localStorage
@@ -181,22 +183,22 @@ const PaginationFeatureComponent = ({ mockData, pathName, rowsValue }: data) => 
         r.ปีที่พิมพ์ === row.ปีที่พิมพ์
       );
     }));
-  };
+  }, [pathName]);
 
   // ดูบทความ
-  const handleStartView = (row: unknown) => {
+  const handleStartView = useCallback((row: unknown) => {
     if (pathName !== '/articlemanagement') return;
     if (!isArticleRow(row)) return;
     setViewing(row);
-  };
+  }, [pathName]);
 
   // แก้ไขสถานะ
-  const handleStartEditStatus = (row: unknown) => {
+  const handleStartEditStatus = useCallback((row: unknown) => {
     if (pathName !== '/articlemanagement') return;
     if (!isArticleRow(row)) return;
     setEditingStatus(row);
     setStatusDraft(row.สถานะ);
-  };
+  }, [pathName]);
 
   const handleSaveStatus = () => {
     if (!editingStatus) return;
@@ -236,12 +238,12 @@ const PaginationFeatureComponent = ({ mockData, pathName, rowsValue }: data) => 
   const handleCancelStatus = () => setEditingStatus(null);
 
   // แก้ไขบทความ (ไม่รวมสถานะ)
-  const handleStartEditArticle = (row: unknown) => {
+  const handleStartEditArticle = useCallback((row: unknown) => {
     if (pathName !== '/articlemanagement') return;
     if (!isArticleRow(row)) return;
     setEditingArticle(row);
     setArticleDraft({ ...row });
-  };
+  }, [pathName]);
 
   const handleSaveArticle = () => {
     if (!editingArticle || !articleDraft) return;
@@ -307,7 +309,6 @@ const PaginationFeatureComponent = ({ mockData, pathName, rowsValue }: data) => 
 
   return (
     <div className="w-full min-h-screen">
-      <Suspense fallback={<Loading />}>
         <div className={`${tableBorder(pathName)} w-full min-h-screen`}>
           {pathName === '/articlemanagement' && (
             <table className="table">
@@ -447,7 +448,6 @@ const PaginationFeatureComponent = ({ mockData, pathName, rowsValue }: data) => 
           )}
 
         </div>
-      </Suspense>
       <div className="flex w-full my-10 justify-between items-center">
         <div>
           <p className="text-lg">แสดง {varlueResult.length} จาก {dataList.length} รายการ</p>

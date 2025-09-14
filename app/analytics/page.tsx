@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { mockArticles, type ArticleRow } from '@/data/articles';
+import { mockArticles, type ArticleRow } from '../../data/articles';
 
 const STORAGE_KEY = 'myArticles';
 

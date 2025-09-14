@@ -10,6 +10,7 @@ const RootLayout = ({ children }: Readonly<{ children: React.ReactNode; }>) => {
   const pathname = usePathname();
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   const userType = 'admin'; // เปลี่ยนเป็น 'teacher' , 'staff' 'admin' ตามที่ต้องการ
 =======
   const userType = 'teacher'; // เปลี่ยนเป็น 'teacher' , 'staff' 'admin' ตามที่ต้องการ
@@ -26,6 +27,10 @@ const RootLayout = ({ children }: Readonly<{ children: React.ReactNode; }>) => {
 
   const login:boolean = true; // เปลี่ยนเป็น true เพื่อแสดง Navbar
 >>>>>>> 4c13001 (fix: 🐛 เเก้ไข bug ตัวร้าย)
+=======
+  const userType: 'teacher' | 'staff' | 'admin' = 'teacher';
+  const login: boolean = true; // เปลี่ยนเป็น true เพื่อแสดง Navbar
+>>>>>>> 13bea2c (WIP: save my local changes)
 
   return (
     <html lang="en">
