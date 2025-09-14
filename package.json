@@ -13,9 +13,12 @@
     "@emotion/styled": "^11.14.1",
     "@fortawesome/fontawesome-free": "^7.0.0",
     "@mui/material": "^7.3.1",
+    "@prisma/client": "^6.16.1",
     "next": "15.5.2",
     "react": "19.1.0",
-    "react-dom": "19.1.0"
+    "react-dom": "19.1.0",
+    "react-hook-form": "^7.62.0",
+    "sqlite3": "^5.1.7"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
@@ -26,6 +29,7 @@
     "daisyui": "^5.0.54",
     "eslint": "^9",
     "eslint-config-next": "15.5.2",
+    "prisma": "^6.16.1",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

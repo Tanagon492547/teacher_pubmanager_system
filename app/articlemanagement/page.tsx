@@ -1,6 +1,7 @@
 "use client";
 import { usePathname } from 'next/navigation'
-import PaginationFeature from "@/components/PaginationFeature"
+import PaginationFeature from "@/components/PaginationFeature";
+import { useRouter } from 'next/navigation';
 
 //จำลองข้อมูล API
 const mockData = [
@@ -32,14 +33,14 @@ const mockData = [
 
 const ArticlemanagementPage = () => { 
   const pathName = usePathname();
-
+  const router = useRouter();
   return (
     <div className="w-full flex flex-col justify-center items-center px-4 py-10">
       <div className="w-full max-w-(--8xl) flex flex-col justify-between items-center">
         <div className="w-full flex flex-row justify-between items-center my-5">
           <p className="text-3xl">บทความของฉัน</p>
           <div className="flex flex-row gap-2">
-            <button className="btn btn-success rounded-xl">เพิ่มบทความ</button>
+            <button className="btn btn-success rounded-xl" onClick={()=>{router.push('/addArticle');}}>เพิ่มบทความ</button>
             <div className="w-xs">
               <select defaultValue="เรียงตามผลงานล่าสุด" className="select">
                 <option disabled={true}>เรียงตามผลงานล่าสุด</option>
