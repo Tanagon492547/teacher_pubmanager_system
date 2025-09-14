@@ -1,6 +1,6 @@
 "use client";
 import PaginationFeature from "@/components/PaginationFeature";
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 
 const mockData = [
   {
@@ -176,6 +176,7 @@ const mockData = [
 
 const UserManagement = () => {
     const pathName = usePathname();
+    const router = useRouter();
   return (
     <div className="w-full flex flex-col justify-center items-center px-4 py-10">
       <div className="w-full max-w-(--8xl) flex flex-col justify-between items-center">
@@ -184,7 +185,7 @@ const UserManagement = () => {
           <p className="text-lg">จัดการบัญชีผู้ใช้</p>
         </div>
         <div className="w-full flex flex-row  gap-5 mb-10">
-          <button className="btn btn-success gap-1">สร้างบัญชีผู้ใช้ <i className="fa-solid fa-plus"></i> </button>
+          <button className="btn btn-success gap-1" onClick={()=>{router.push('/createuser');}}>สร้างบัญชีผู้ใช้ <i className="fa-solid fa-plus"></i> </button>
           <div className="w-xs">
             <form action="" className="w-full relative">
               <button type="submit" className="btn btn-ghost absolute z-99 end-0"><i className="fa-solid fa-magnifying-glass"></i></button>
