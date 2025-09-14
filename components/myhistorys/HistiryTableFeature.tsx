@@ -9,8 +9,8 @@ type tableHerdersType = {
   status: string | undefined,
 }
 
-const HistiryTableFeature = ({ pathName, index, title, uploadDate, successDate,  inspector ,status }: tableHerdersType) => {
-  const getButtonClass = (status: any) => {
+const HistiryTableFeature = ({ index, title, uploadDate, successDate,  inspector ,status }: tableHerdersType) => {
+  const getButtonClass = (status: string | undefined) => {
     if (status === 'กำลังตรวจ') {
       return "badge bg-[var(--color-warning)]/70 text-[var(--color-success-content)]";
     } else if (status === 'ต้องเเก้ไข') {

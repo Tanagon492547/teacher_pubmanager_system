@@ -389,7 +389,7 @@ const PaginationFeatureComponent = ({ mockData, pathName, rowsValue }: data) => 
                 {varlueResult.map((value, key) => (
                   isHomeSearchItem(value) ? (
                     <tr key={key} className="w-full">
-                      <SearchResultItem id={value.id} title={value.title} athor={value.athor} field={value.field} offset={value.offset} url={value.url} />
+                      <SearchResultItem id={String(value.id)} title={value.title} athor={value.athor} field={value.field} offset={value.offset} url={value.url} />
                     </tr>
                   ) : null
                 ))}

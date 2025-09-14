@@ -1,5 +1,6 @@
+import type { FC } from 'react'
 
-type tableHerdersType = {
+export type ArticleTableRowProps = {
   index: number | undefined,
   title: string | undefined,
   uploadDate: string | undefined,
@@ -12,7 +13,7 @@ type tableHerdersType = {
   onDelete?: () => void,
 }
 
-const TableFeature = ({ index, title, uploadDate, publishYear, type, status, onView, onEditStatus, onEditArticle, onDelete }: tableHerdersType) => {
+const TableFeature: FC<ArticleTableRowProps> = ({ index, title, uploadDate, publishYear, type, status, onView, onEditStatus, onEditArticle, onDelete }) => {
   const getButtonClass = (status: string | undefined) => {
     if (status === 'กำลังตรวจ') {
       return "btn bg-[var(--color-warning)]/70 text-[var(--color-success-content)]";

@@ -5,7 +5,18 @@ import ContributorCard from './ContributorCard';
 import Image from 'next/image';
 import DownloadCard from '@/components/DownloadCard';
 
-const ArticleDetails = ({ article }: any) => {
+type Article = {
+  imageUrl?: string;
+  title?: string;
+  type?: string;
+  publishedDate?: string;
+  abstract?: string;
+  status?: string;
+  category?: string;
+  fileUrl?: string;
+};
+
+const ArticleDetails = ({ article }: { article?: Article }) => {
   const router = useRouter();
 
   return (
@@ -51,7 +62,7 @@ const ArticleDetails = ({ article }: any) => {
                 </div>
               </div>
               <div className='my-10'>
-                <DownloadCard />
+                <DownloadCard url={article?.fileUrl} />
               </div>
           </div>
           <ContributorCard />
