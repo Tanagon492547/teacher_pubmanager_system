@@ -32,7 +32,7 @@ const TableFeature = ({ pathName, index, title, uploadDate, publishYear, type, s
       <td className="w-10 text-center">{type}</td>
       <td className="w-10 text-center"><span className={`w-30 p-2 rounded-full  ${getButtonClass(status)}`}>{status}</span></td>
       <td className="w-10 text-center"><button className={`btn btn-ghost rounded-xl ${status === 'เสร็จสิ้น' ? 'btn-disabled' : ''}`}><i className="fa-solid fa-pen text-(--color-warning)/80"></i></button></td>
-      <td className="w-10 text-center"><button className={`btn btn-ghost rounded-xl ${status === 'เสร็จสิ้น' ? 'btn-disabled' : ''} `}><i className="fa-solid fa-trash text-(--color-error)"></i></button></td>
+      <td className="w-10 text-center"><button onClick={() =>alert('ลบข้อมูลสำเร็จ') } className={`btn btn-ghost rounded-xl ${status === 'เสร็จสิ้น' ? 'btn-disabled' : ''} `}><i className="fa-solid fa-trash text-(--color-error)"></i></button></td>
     </tr>
   )
 };
