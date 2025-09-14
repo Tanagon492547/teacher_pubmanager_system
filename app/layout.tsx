@@ -8,13 +8,10 @@ import Navbar from "@/components/navigations/Navbar";
 
 const RootLayout = ({ children }: Readonly<{ children: React.ReactNode; }>) => {
   const pathname = usePathname();
-<<<<<<< HEAD
-  const userType = 'admin'; // เปลี่ยนเป็น 'teacher' , 'staff' 'admin' ตามที่ต้องการ
-=======
-  const userType = 'teacher'; // เปลี่ยนเป็น 'teacher' , 'staff' 'admin' ตามที่ต้องการ
->>>>>>> update-ArticleDetails
 
-  const login = true; // เปลี่ยนเป็น true เพื่อแสดง Navbar
+  const userType = 'teacher'; // เปลี่ยนเป็น 'teacher' , 'staff' 'admin' ตามที่ต้องการ
+
+  const login:boolean = true; // เปลี่ยนเป็น true เพื่อแสดง Navbar
 
   return (
     <html lang="en">
