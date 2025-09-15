@@ -15,7 +15,7 @@
     "@mui/material": "^7.3.1",
     "@prisma/client": "^6.16.1",
     "next": "15.5.2",
-    "react": "19.1.0",
+    "react": "^19.1.0",
     "react-dom": "19.1.0",
     "react-hook-form": "^7.62.0",
     "sqlite3": "^5.1.7"
@@ -24,7 +24,7 @@
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
-    "@types/react": "^19",
+    "@types/react": "^19.1.13",
     "@types/react-dom": "^19",
     "daisyui": "^5.0.54",
     "eslint": "^9",
