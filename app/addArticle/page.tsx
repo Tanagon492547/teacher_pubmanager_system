@@ -15,7 +15,26 @@ const ArticlemanagementPage = () => {
 
         <div className="w-6/7 flex flex-col justify-center items-center">
 
-          <form action="" className="w-full flex flex-col gap-2">
+          <form onSubmit={async (e) => {
+            e.preventDefault();
+            const form = e.currentTarget as HTMLFormElement
+            const formData = new FormData(form)
+            const payload = {
+              article_name: String(formData.get('article_name') || ''),
+              article_file: '/uploads/dummy.pdf',
+              article_typeid: undefined,
+              contributor_id: undefined,
+              published_year: formData.get('published_year') ? Number(formData.get('published_year')) : undefined
+            }
+            try {
+              const res = await fetch('/api/articles', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+              if (!res.ok) throw new Error('Failed to save')
+              alert('บันทึกบทความสำเร็จ')
+              window.location.href = '/'
+            } catch (err: any) {
+              alert(err.message || 'เกิดข้อผิดพลาด')
+            }
+          }} className="w-full flex flex-col gap-2">
             {/* อาจารย์เจ้าของบทความ */}
             <div>
             <label className="text-xs font-medium">
@@ -62,7 +81,7 @@ const ArticlemanagementPage = () => {
                 ชื่อบทความ<span className="text-error">*</span>
             </label>
             <div className="w-full relative">
-              <input type="text"
+              <input name="article_name" type="text"
                 className="input input-bordered w-full"
               />
             </div>
@@ -90,7 +109,7 @@ const ArticlemanagementPage = () => {
             {/* วัน เดือน ปี */}
             <label  className="text-xs font-medium">วัน เดือน ปี<span className="text-error">*</span></label>
             <div className="w-full relative">
-              <input type="date"
+              <input name="published_year" type="date"
                 className="input input-bordered w-full pr-10"
               />
             </div>
@@ -141,7 +160,7 @@ const ArticlemanagementPage = () => {
 
             {/* ปุ่มบันทึก ยกเลิก */}
           <div className="pt-4 flex flex-col md:flex-row gap-3 md:gap-6 md:justify-center">
-            <button type="button"  className="btn btn-success md:min-w-48 rounded-2xl text-base-100">
+            <button type="submit"  className="btn btn-success md:min-w-48 rounded-2xl text-base-100">
               บันทึก
             </button>
             <button type="button" className="btn btn-error md:min-w-48 rounded-2xl text-base-100">
