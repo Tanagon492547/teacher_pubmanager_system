@@ -78,3 +78,12 @@ Notes:
 - Passwords are stored in plaintext in this starter; add hashing (bcrypt) before production.
 - Prisma client is in `lib/prisma.ts`.
 
+วิธีติดตั้ง SQLite
+ตามหาไฟล์ .env ในไดร์ฟของต้องห้าม เเล้วนำไปไว้ในโปรเจคระดับเดียวกับ .json
+
+1.npm install
+2.npx prisma generate
+3.npx prisma migrate dev --name init
+4.npm run seed
+5.npx prisma studio
+6.npm run dev
