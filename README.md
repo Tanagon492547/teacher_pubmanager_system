@@ -35,3 +35,46 @@ The easiest way to deploy your Next.js app is to use the [Vercel Platform](https
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
 # teacher_pubmanager_system
+
+## Local Prisma + SQLite setup (Windows `cmd.exe`)
+
+1. Install dependencies:
+
+```cmd
+npm install
+```
+
+2. Generate Prisma client:
+
+```cmd
+npm run prisma:generate
+```
+
+3. Create the SQLite database and run migrations (this will create `prisma/dev.db`):
+
+```cmd
+npx prisma migrate dev --name init
+```
+
+4. Seed or reset DB (if needed):
+
+```cmd
+npm run setup-db
+```
+
+5. Start dev server:
+
+```cmd
+npm run dev
+```
+
+API endpoints (app router):
+
+- `POST /api/auth` - body `{ username, password }` -> basic auth check
+- `GET|POST /api/users` - list users / create user
+- `GET|POST /api/articles` - list articles / create article
+
+Notes:
+- Passwords are stored in plaintext in this starter; add hashing (bcrypt) before production.
+- Prisma client is in `lib/prisma.ts`.
+
