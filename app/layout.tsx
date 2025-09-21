@@ -10,7 +10,7 @@ import { useEffect, useState } from 'react'
 const RootLayout = ({ children }: Readonly<{ children: React.ReactNode; }>) => {
   const pathname = usePathname();
 
-  const [userType, setUserType] = useState<'teacher'|'staff'|'admin'|'guest'>('guest')
+  const [userType, setUserType] = useState<'teacher' | 'staff' | 'admin' | 'guest'>('guest')
   const [login, setLogin] = useState<boolean>(false)
 
   useEffect(() => {
@@ -27,8 +27,8 @@ const RootLayout = ({ children }: Readonly<{ children: React.ReactNode; }>) => {
       try {
         const res = await fetch(`/api/users/${id}`)
         if (!res.ok) throw new Error('No user')
-  const data = await res.json()
-  const typeName = data?.personal?.user_type?.user_typename || data?.personal?.user_fame || 'teacher'
+        const data = await res.json()
+        const typeName = data?.personal?.user_type?.user_typename || data?.personal?.user_fame || 'teacher'
         // map to normalized types
         if (typeName.toLowerCase().includes('admin')) setUserType('admin')
         else if (typeName.toLowerCase().includes('staff')) setUserType('staff')
@@ -67,14 +67,14 @@ const RootLayout = ({ children }: Readonly<{ children: React.ReactNode; }>) => {
 
   return (
     <html lang="en">
-      <body className="flex flex-col min-h-screen"> 
+      <body className="flex flex-col min-h-screen">
         <header>
           {pathname !== '/login' && <HeaderPage />}
 
           {login === true && pathname !== '/login' && (
             <>
               <Navbar userType={userType} />
-              <div className='w-full h-px bg-primary' /> 
+              <div className='w-full h-px bg-primary' />
             </>
           )}
         </header>
@@ -82,7 +82,7 @@ const RootLayout = ({ children }: Readonly<{ children: React.ReactNode; }>) => {
         <main className="grow">
           {children}
         </main>
-        
+
         {pathname !== '/login' && <FooterPage />}
       </body>
     </html>

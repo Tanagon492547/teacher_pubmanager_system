@@ -71,7 +71,7 @@ const HeaderPage = () => {
               </button>
             </>
           ) : (
-            <Link href="/"><button className="btn btn-success rounded-lg "><i className="fa-solid fa-user text-xl"></i> <p className="text-success-content"> เข้าสู่ระบบ</p></button></Link>
+            <Link href="/login"><button className="btn btn-success rounded-lg "><i className="fa-solid fa-user text-xl"></i> <p className="text-success-content"> เข้าสู่ระบบ</p></button></Link>
           )}
         </div>
       </div>
