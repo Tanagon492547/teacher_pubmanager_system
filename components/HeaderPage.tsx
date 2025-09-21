@@ -1,9 +1,10 @@
 "use client"
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 
 const HeaderPage = () => {
   const [displayName, setDisplayName] = useState<string | null>(null)
+  const router = useRouter()
 
   const loadUser = async () => {
     try {
@@ -18,7 +19,6 @@ const HeaderPage = () => {
         return
       }
       const data = await res.json()
-      // prefer personal.user_name, fallback to username
       const name = data?.personal?.user_name || data?.username || null
       setDisplayName(name)
     } catch (err) {
@@ -40,6 +40,16 @@ const HeaderPage = () => {
     }
   }, [])
 
+  const handleLogout = () => {
+    try {
+      localStorage.removeItem('userId')
+      window.dispatchEvent(new Event('userChanged'))
+    } catch (e) {
+      // ignore
+    }
+    router.push('/login')
+  }
+
   return (
     <div className="w-full h-18 flex justify-center items-center bg-(--color-primary) px-4">
       <div className="w-full max-w-(--8xl) flex justify-between items-center">
@@ -47,31 +57,24 @@ const HeaderPage = () => {
           <i className="fa-solid fa-graduation-cap text-4xl text-(--color-base-herder) "></i>
           <p className="text-(--color-base-herder)">ผลงานตีพิมพ์อาจารย์ PSU</p>
         </div>
+
         <div className="flex items-center gap-2">
           {displayName ? (
             <>
-              <Link href="/proflie"><button className="btn btn-ghost rounded-lg"><i className="fa-solid fa-user text-xl"></i> <span className="ml-2">{displayName}</span></button></Link>
-              <button
-                aria-label="Logout"
-                title="Logout"
-                onClick={() => {
-                  try {
-                    localStorage.removeItem('userId')
-                    // notify other listeners/tabs
-                    window.dispatchEvent(new Event('userChanged'))
-                  } catch (e) {
-                    // ignore
-                  }
-                  // navigate to login
-                  window.location.href = '/'
-                }}
-                className="btn btn-ghost rounded-lg"
-              >
+              <button className="btn btn-ghost rounded-lg" onClick={() => router.push('/proflie')}>
+                <i className="fa-solid fa-user text-xl"></i>
+                <span className="ml-2">{displayName}</span>
+              </button>
+
+              <button aria-label="Logout" title="Logout" onClick={handleLogout} className="btn btn-ghost rounded-lg">
                 <i className="fa-solid fa-right-from-bracket text-xl"></i>
               </button>
             </>
           ) : (
-            <Link href="/login"><button className="btn btn-success rounded-lg "><i className="fa-solid fa-user text-xl"></i> <p className="text-success-content"> เข้าสู่ระบบ</p></button></Link>
+            <button className="btn btn-success rounded-lg " onClick={() => router.push('/login')}>
+              <i className="fa-solid fa-user text-xl"></i>
+              <p className="text-success-content"> เข้าสู่ระบบ</p>
+            </button>
           )}
         </div>
       </div>
@@ -79,4 +82,4 @@ const HeaderPage = () => {
   )
 }
 
-export default HeaderPage;
+export default HeaderPage

@@ -36,8 +36,8 @@ const LoginPage = () => {
   }
 
   return (
-    <div className="w-full flex flex-col justify-center items-center px-4 py-10 bg-base-200">
-      <div className="w-lg flex flex-col justify-between items-center rounded-2xl gap-6 py-20 bg-base-100 px-10 shadow-lg">
+    <div className="w-full flex flex-col justify-center items-center px-4 py-10 bg-base-200 min-h-screen">
+      <div className="w-lg flex flex-col justify-between items-center rounded-2xl gap-6 py-20 bg-base-100 px-10 shadow-lg ">
         <div className="w-16 h-16 flex justify-center items-center rounded-xl bg-(--color-primary)/90 text-(--color-primary-content) text-2xl">
           <i className="fa-solid fa-lock "></i>
         </div>
