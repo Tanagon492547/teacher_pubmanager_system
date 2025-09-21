@@ -1,0 +1,82 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model UserAuthentication {
+  id       Int     @id @default(autoincrement())
+  username String  @unique
+  password String
+  login    Login?
+  personal Personal?
+}
+
+model Login {
+  id     Int  @id @default(autoincrement())
+  user   UserAuthentication @relation(fields: [userId], references: [id])
+  userId Int  @unique
+  age    Int?
+}
+
+model Personal {
+  id         Int    @id @default(autoincrement())
+  user       UserAuthentication @relation(fields: [userId], references: [id])
+  userId     Int    @unique
+  user_name  String
+  user_fame  String?
+  user_type  UserType @relation(fields: [userTypeId], references: [id])
+  userTypeId Int
+}
+
+model UserType {
+  id           Int    @id @default(autoincrement())
+  user_typename String
+  personals    Personal[]
+}
+
+model Contributor {
+  id               Int    @id @default(autoincrement())
+  contributor_name String
+  academic_title   String?
+  articles         ArticleDB[]
+}
+
+model ArticleDB {
+  id             Int      @id @default(autoincrement())
+  article_name   String
+  article_file   String?
+  article_status String?
+  publish_status String?
+  published_year Int?
+  article_type   ArticleType? @relation(fields: [articleTypeId], references: [id])
+  articleTypeId  Int?
+  contributor    Contributor? @relation(fields: [contributorId], references: [id])
+  contributorId  Int?
+  categories     Category[]
+  statusHistory  ArticleStatusHistory[]
+}
+
+model ArticleStatusHistory {
+  id            Int    @id @default(autoincrement())
+  article       ArticleDB @relation(fields: [articleId], references: [id])
+  articleId     Int
+  article_status String
+  save_history  DateTime @default(now())
+}
+
+model ArticleType {
+  id              Int    @id @default(autoincrement())
+  article_typename String
+  articles        ArticleDB[]
+}
+
+model Category {
+  id        Int    @id @default(autoincrement())
+  article   ArticleDB @relation(fields: [articleId], references: [id])
+  articleId Int
+  summary   String?
+}

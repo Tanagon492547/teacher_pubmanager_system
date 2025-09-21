@@ -20,9 +20,32 @@ const UserManagement: React.FC = () => {
 const { register, handleSubmit } = useForm<UserForm>();
 const [preview, setPreview] = useState<string | null>(null);
 
-  const onSubmit = (data: UserForm) => {
-    console.log("Form Data:", data);
-    alert("บันทึกข้อมูลสำเร็จ");
+  const [loading, setLoading] = React.useState(false)
+  const onSubmit = async (data: UserForm) => {
+    setLoading(true)
+    try {
+      // map form to API fields expected by /api/users
+      const payload = {
+        username: data.username,
+        password: data.password,
+        user_name: `${data.firstName} ${data.lastName}`,
+        user_fame: data.title,
+        user_typeid: data.role === 'admin' ? 1 : data.role === 'staff' ? 2 : 3,
+        age: 30
+      }
+      const res = await fetch('/api/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      const json = await res.json()
+      if (!res.ok) throw new Error(json?.error || 'Failed to create user')
+      alert('บันทึกข้อมูลสำเร็จ')
+    } catch (err: any) {
+      alert(err.message || 'เกิดข้อผิดพลาด')
+    } finally {
+      setLoading(false)
+    }
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {

@@ -3,10 +3,15 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "eslint"
+  "dev": "next dev",
+  "build": "next build",
+  "start": "next start",
+  "lint": "eslint",
+  "prisma:generate": "prisma generate",
+  "prisma:migrate": "prisma migrate dev --name init --preview-feature",
+  "prisma:studio": "prisma studio",
+  "setup-db": "npx prisma migrate reset --force --skip-seed"
+  ,"seed": "node prisma/seed.js"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
