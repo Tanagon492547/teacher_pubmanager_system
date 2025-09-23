@@ -10,8 +10,9 @@ import { useEffect, useState } from 'react'
 const RootLayout = ({ children }: Readonly<{ children: React.ReactNode; }>) => {
   const pathname = usePathname();
 
-  const [userType, setUserType] = useState<'teacher'|'staff'|'admin'|'guest'>('guest')
+  const [userType, setUserType] = useState<'teacher' | 'staff' | 'admin' | 'guest'>('guest')
   const [login, setLogin] = useState<boolean>(false)
+  const [userId, setUserId] = useState('');
 
   useEffect(() => {
     // read saved userId after login
@@ -27,12 +28,15 @@ const RootLayout = ({ children }: Readonly<{ children: React.ReactNode; }>) => {
       try {
         const res = await fetch(`/api/users/${id}`)
         if (!res.ok) throw new Error('No user')
-  const data = await res.json()
-  const typeName = data?.personal?.user_type?.user_typename || data?.personal?.user_fame || 'teacher'
+        const data = await res.json()
+        const typeName = data?.personal?.user_type?.user_typename || data?.personal?.user_fame || 'teacher'
         // map to normalized types
         if (typeName.toLowerCase().includes('admin')) setUserType('admin')
         else if (typeName.toLowerCase().includes('staff')) setUserType('staff')
-        else setUserType('teacher')
+        else {
+        setUserType('teacher')
+        setUserId(id)
+      }
         setLogin(true)
       } catch (err) {
         setLogin(false)
@@ -73,7 +77,7 @@ const RootLayout = ({ children }: Readonly<{ children: React.ReactNode; }>) => {
 
           {login === true && pathname !== '/login' && (
             <>
-              <Navbar userType={userType} />
+              <Navbar userType={userType} user_id={userId} />
               <div className='w-full h-px bg-primary' />
             </>
           )}
