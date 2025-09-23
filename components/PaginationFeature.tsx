@@ -6,6 +6,7 @@ import HistiryTableFeature from "./myhistorys/HistiryTableFeature";
 import TeacherArticeTableFeature from "./articlevalidations/TeacherArticeTableFeature";
 import ManagementTableFeature from "./usermanagements/ManagementTableFeature";
 import Loading from "@/app/loading";
+import { usePathname } from "next/navigation";
 
 type data = {
   mockData: object,
@@ -18,14 +19,14 @@ const paginationFeature = ({ mockData, pathName, rowsValue }: data) => {
   const [rowsPerPage, setRowsPerPage] = useState(10); // จำนวนเเถวต่อหน้า 
   const arrData = Object.values(mockData); // แปลง object เป็น array ของ values
   const varlueResult = arrData.slice((tablePage - 1) * rowsPerPage, tablePage * rowsPerPage);
-
+  const pathname = usePathname();
 
   useEffect(() => {
     setRowsPerPage(rowsValue)
   })
 
   const tableBorder = (pathName: any) => {
-    if (pathName !== '/' && pathName !== '/articlevalidation' && pathName !== '/usermanagement') {
+    if (pathName !== '/' && pathName !== pathname.startsWith('/articlemanagement') && pathName !== '/usermanagement') {
       return 'overflow-x-auto  border-2 border-(--color-primary)/50 rounded-xl';
     } else {
       return '';
@@ -37,7 +38,7 @@ const paginationFeature = ({ mockData, pathName, rowsValue }: data) => {
     <div className="w-full min-h-screen">
       <Suspense fallback={<Loading />}>
         <div className={`${tableBorder(pathName)} w-full min-h-screen`}>
-          {pathName === '/articlemanagement' && (
+          {pathname.startsWith('/articlemanagement') && (
             <table className="table">
               <thead>
                 <tr>
