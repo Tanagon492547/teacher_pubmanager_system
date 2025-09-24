@@ -1,190 +1,68 @@
 "use client";
 import PaginationFeature from "@/components/PaginationFeature";
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation';
+import React, { useState, useEffect } from 'react';
 
-const mockData = [
-  {
-    "ชื่ออาจารย์": "สมชาย ใจดี",
-    "อีเมล์": "somchai@example.com",
-    "ประเภท": "อาจารย์",
-    "รายละเอียด": "คณะวิทยาการคอมพิวเตอร์",
-    "เข้าสู่ระบบล่าสุด": "2025-08-20 09:15:23"
-  },
-  {
-    "ชื่ออาจารย์": "สมศรี แก้วใส",
-    "อีเมล์": "somsri@example.com",
-    "ประเภท": "อาจารย์",
-    "รายละเอียด": "คณะวิศวกรรมศาสตร์",
-    "เข้าสู่ระบบล่าสุด": "2025-08-18 14:25:40"
-  },
-  {
-    "ชื่ออาจารย์": "พรชัย นาคิน",
-    "อีเมล์": "pornchai@example.com",
-    "ประเภท": "เจ้าหน้าที่",
-    "รายละเอียด": "ฝ่ายทะเบียน",
-    "เข้าสู่ระบบล่าสุด": "2025-08-27 10:12:11"
-  },
-  {
-    "ชื่ออาจารย์": "กมลวรรณ ชื่นบุญ",
-    "อีเมล์": "kamonwan@example.com",
-    "ประเภท": "เจ้าหน้าที่",
-    "รายละเอียด": "ฝ่ายการเงิน",
-    "เข้าสู่ระบบล่าสุด": "2025-08-21 15:33:09"
-  },
-  {
-    "ชื่ออาจารย์": "อนุชา มีศรี",
-    "อีเมล์": "anucha@example.com",
-    "ประเภท": "Admin",
-    "รายละเอียด": "-",
-    "เข้าสู่ระบบล่าสุด": "2025-08-25 08:22:50"
-  },
-  {
-    "ชื่ออาจารย์": "มานพ สายใจ",
-    "อีเมล์": "manop@example.com",
-    "ประเภท": "อาจารย์",
-    "รายละเอียด": "คณะวิทยาศาสตร์",
-    "เข้าสู่ระบบล่าสุด": "2025-08-19 16:11:05"
-  },
-  {
-    "ชื่ออาจารย์": "วรรณา สุขสันต์",
-    "อีเมล์": "wanna@example.com",
-    "ประเภท": "เจ้าหน้าที่",
-    "รายละเอียด": "ฝ่ายบุคคล",
-    "เข้าสู่ระบบล่าสุด": "2025-08-22 11:45:38"
-  },
-  {
-    "ชื่ออาจารย์": "จารุวรรณ จิตรดี",
-    "อีเมล์": "jaruwan@example.com",
-    "ประเภท": "Admin",
-    "รายละเอียด": "-",
-    "เข้าสู่ระบบล่าสุด": "2025-08-28 07:50:27"
-  },
-  {
-    "ชื่ออาจารย์": "ประสิทธิ์ บรรจง",
-    "อีเมล์": "prasit@example.com",
-    "ประเภท": "อาจารย์",
-    "รายละเอียด": "คณะรัฐศาสตร์",
-    "เข้าสู่ระบบล่าสุด": "2025-08-15 12:18:40"
-  },
-  {
-    "ชื่ออาจารย์": "สุภาวดี อินทร",
-    "อีเมล์": "supawadee@example.com",
-    "ประเภท": "อาจารย์",
-    "รายละเอียด": "คณะบริหารธุรกิจ",
-    "เข้าสู่ระบบล่าสุด": "2025-08-26 13:02:19"
-  },
-  {
-    "ชื่ออาจารย์": "กิตติพงศ์ ทองแท้",
-    "อีเมล์": "kittipong@example.com",
-    "ประเภท": "เจ้าหน้าที่",
-    "รายละเอียด": "ฝ่าย IT Support",
-    "เข้าสู่ระบบล่าสุด": "2025-08-24 09:59:44"
-  },
-  {
-    "ชื่ออาจารย์": "อารีย์ พงษ์สวัสดิ์",
-    "อีเมล์": "aree@example.com",
-    "ประเภท": "อาจารย์",
-    "รายละเอียด": "คณะมนุษยศาสตร์",
-    "เข้าสู่ระบบล่าสุด": "2025-08-21 18:30:29"
-  },
-  {
-    "ชื่ออาจารย์": "สุชาติ เกียรติ",
-    "อีเมล์": "suchat@example.com",
-    "ประเภท": "Admin",
-    "รายละเอียด": "-",
-    "เข้าสู่ระบบล่าสุด": "2025-08-23 07:11:56"
-  },
-  {
-    "ชื่ออาจารย์": "ภัทรวดี สวยใส",
-    "อีเมล์": "phattharawadee@example.com",
-    "ประเภท": "อาจารย์",
-    "รายละเอียด": "คณะสังคมศาสตร์",
-    "เข้าสู่ระบบล่าสุด": "2025-08-16 16:45:33"
-  },
-  {
-    "ชื่ออาจารย์": "วิทยา มากมี",
-    "อีเมล์": "withaya@example.com",
-    "ประเภท": "เจ้าหน้าที่",
-    "รายละเอียด": "ฝ่ายกิจการนักศึกษา",
-    "เข้าสู่ระบบล่าสุด": "2025-08-27 20:20:40"
-  },
-  {
-    "ชื่ออาจารย์": "กัญญา สุวรรณ",
-    "อีเมล์": "kanya@example.com",
-    "ประเภท": "อาจารย์",
-    "รายละเอียด": "คณะการท่องเที่ยว",
-    "เข้าสู่ระบบล่าสุด": "2025-08-28 09:33:14"
-  },
-  {
-    "ชื่ออาจารย์": "จิตรลดา พูนสุข",
-    "อีเมล์": "chitlada@example.com",
-    "ประเภท": "เจ้าหน้าที่",
-    "รายละเอียด": "ฝ่ายห้องสมุด",
-    "เข้าสู่ระบบล่าสุด": "2025-08-19 14:25:51"
-  },
-  {
-    "ชื่ออาจารย์": "นรินทร์ วัฒนะ",
-    "อีเมล์": "narinn@example.com",
-    "ประเภท": "Admin",
-    "รายละเอียด": "-",
-    "เข้าสู่ระบบล่าสุด": "2025-08-20 08:17:05"
-  },
-  {
-    "ชื่ออาจารย์": "ปรียา ธนูทอง",
-    "อีเมล์": "priya@example.com",
-    "ประเภท": "อาจารย์",
-    "รายละเอียด": "คณะครุศาสตร์",
-    "เข้าสู่ระบบล่าสุด": "2025-08-22 15:40:29"
-  },
-  {
-    "ชื่ออาจารย์": "มนัสชัย อินทร์ทอง",
-    "อีเมล์": "manatchai@example.com",
-    "ประเภท": "อาจารย์",
-    "รายละเอียด": "คณะนิติศาสตร์",
-    "เข้าสู่ระบบล่าสุด": "2025-08-24 19:55:12"
-  },
-  {
-    "ชื่ออาจารย์": "อรทัย งามสง่า",
-    "อีเมล์": "ornthai@example.com",
-    "ประเภท": "เจ้าหน้าที่",
-    "รายละเอียด": "ฝ่ายพัสดุ",
-    "เข้าสู่ระบบล่าสุด": "2025-08-18 10:29:48"
-  },
-  {
-    "ชื่ออาจารย์": "รุ่งโรจน์ แสงทอง",
-    "อีเมล์": "roongroj@example.com",
-    "ประเภท": "อาจารย์",
-    "รายละเอียด": "คณะสถาปัตยกรรมศาสตร์",
-    "เข้าสู่ระบบล่าสุด": "2025-08-17 17:40:22"
-  },
-  {
-    "ชื่ออาจารย์": "วิเชียร บุญมาก",
-    "อีเมล์": "wichean@example.com",
-    "ประเภท": "เจ้าหน้าที่",
-    "รายละเอียด": "ฝ่ายประชาสัมพันธ์",
-    "เข้าสู่ระบบล่าสุด": "2025-08-26 08:45:33"
-  },
-  {
-    "ชื่ออาจารย์": "ศิริพร นวลใย",
-    "อีเมล์": "siriporn@example.com",
-    "ประเภท": "Admin",
-    "รายละเอียด": "-",
-    "เข้าสู่ระบบล่าสุด": "2025-08-28 12:05:49"
-  }
-];
-
+type UserData = {
+  userId: number;
+  name: string;
+  type: string;
+  detail: string;
+};
 
 const UserManagement = () => {
-    const pathName = usePathname();
-    const router = useRouter();
+  const pathName = usePathname();
+  const router = useRouter();
+  
+  const [users, setUsers] = useState<UserData[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Debug Log 1: เช็คทุกครั้งที่ Component ถูกวาดใหม่
+  console.log("Component is rendering...");
+
+  useEffect(() => {
+    // Debug Log 2: เช็คตอน useEffect ทำงาน
+    console.log("useEffect triggered! This should happen only once (or twice in dev mode).");
+
+    const fetchUsers = async () => {
+      try {
+        const data = await fetch('/api/user-all');
+        if (!data.ok) {
+          throw new Error(`API responded with status: ${data.status}`);
+        }
+        const fetchedUsers = await data.json();
+        setUsers(fetchedUsers);
+      } catch (error) {
+        console.error("เกิดข้อผิดพลาดในการดึงข้อมูล:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUsers();
+
+    // Debug Log 3: ฟังก์ชันนี้จะทำงานตอน Component ถูกทำลาย
+    return () => {
+      console.log("Component is UNMOUNTING. If you see this, something is removing me.");
+    };
+  }, []); // <-- วงเล็บว่าง [] สำคัญมากๆ นะ!
+
+  if (isLoading) {
+    return (
+      <div className="w-full flex justify-center items-center py-20">
+        <p className="text-xl">กำลังโหลดข้อมูลผู้ใช้...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full flex flex-col justify-center items-center px-4 py-10">
-      <div className="w-full max-w-(--8xl) flex flex-col justify-between items-center">
+      <div className="w-full max-w-[var(--8xl)] flex flex-col justify-between items-center">
         <div className="w-full flex flex-col items-start my-5 gap-2">
           <p className="text-3xl">User Management</p>
           <p className="text-lg">จัดการบัญชีผู้ใช้</p>
         </div>
-        <div className="w-full flex flex-row  gap-5 mb-10">
+        <div className="w-full flex flex-row gap-5 mb-10">
           <button className="btn btn-success gap-1" onClick={()=>{router.push('/createuser');}}>สร้างบัญชีผู้ใช้ <i className="fa-solid fa-plus"></i> </button>
           <div className="w-xs">
             <form action="" className="w-full relative">
@@ -194,11 +72,10 @@ const UserManagement = () => {
           </div>
         </div>
 
-        <div className="w-full min-h-screen border-2 border-(--color-border)/20 rounded-2xl p-5">
+        <div className="w-full min-h-screen border-2 border-[var(--color-border)]/20 rounded-2xl p-5">
           <p className="text-xl pl-4">บัญผู้ใช้ทั้งหมด</p>
-          <PaginationFeature pathName={pathName} mockData={mockData} rowsValue={11} />
+          <PaginationFeature pathName={pathName} mockData={users} rowsValue={11} />
         </div>
-
       </div>
     </div>
   );
