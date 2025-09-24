@@ -51,7 +51,7 @@ const HeaderPage = () => {
   }
 
   return (
-    <div className="w-full h-18 flex justify-center items-center bg-(--color-primary) px-4">
+    <div className="w-full h-18 flex justify-center items-center bg-(--color-primary) px-4 shadow-xl ">
       <div className="w-full max-w-(--8xl) flex justify-between items-center">
         <div className="flex flex-row items-center gap-4">
           <i className="fa-solid fa-graduation-cap text-4xl text-(--color-base-herder) "></i>
