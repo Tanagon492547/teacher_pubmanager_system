@@ -61,7 +61,7 @@ const HeaderPage = () => {
         <div className="flex items-center gap-2">
           {displayName ? (
             <>
-              <button className="btn btn-ghost rounded-lg" onClick={() => router.push('/proflie')}>
+              <button className="btn btn-ghost rounded-lg text-white" onClick={() => router.push('/proflie')}>
                 <i className="fa-solid fa-user text-xl text-white"></i>
                 <span className="ml-2">{displayName}</span>
               </button>
