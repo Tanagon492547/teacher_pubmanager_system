@@ -7,6 +7,7 @@ import TeacherArticeTableFeature from "./articlevalidations/TeacherArticeTableFe
 import ManagementTableFeature from "./usermanagements/ManagementTableFeature";
 import Loading from "@/app/loading";
 import { usePathname } from "next/navigation";
+import { motion } from "framer-motion";
 
 type data = {
   mockData: object,
@@ -83,13 +84,31 @@ const paginationFeature = ({ mockData, pathName, rowsValue }: data) => {
           )}
 
           {pathName === '/' && (
-            <table className=" w-full">
+            <table className="w-full">
               <tbody className="w-full">
-                {/* slice เเบ่งหน้า */}
-                {varlueResult.map((value, key) => (
-                  <tr key={key} className="w-full">
-                    <SearchResultItem id={value.id} title={value.title} athor={value.athor} field={value.field} offset={value.offset} url={value.url} />
-                  </tr>
+                {varlueResult.map((value, index) => ( // <-- เปลี่ยน key เป็น index เพื่อใช้หน่วงเวลา
+                  // 1. เปลี่ยน <tr> ธรรมดา ให้เป็น motion.tr
+                  <motion.tr
+                    key={value.id || index} // <-- ใช้ id ที่ไม่ซ้ำกันจะดีที่สุดนะ
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }} // 2. ใช้ whileInView เพื่อให้ทำงานตอน scroll มาเจอ
+                    viewport={{ once: true }} // 3. ตั้งค่าให้ animation ทำงานแค่ครั้งเดียว
+                    transition={{
+                      duration: 0.5,
+                      delay: index * 0.05 // 4. (เทคนิคพิเศษ!) หน่วงเวลาแต่ละแถวเล็กน้อย
+                    }}
+                    className="w-full"
+                  >
+                    {/* 5. SearchResultItem ต้อง return <td>...</td> ออกมานะ */}
+                    <SearchResultItem
+                      id={value.id}
+                      title={value.title}
+                      athor={value.athor}
+                      field={value.field}
+                      offset={value.offset}
+                      url={value.url}
+                    />
+                  </motion.tr>
                 ))}
               </tbody>
             </table>
