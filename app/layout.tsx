@@ -5,7 +5,7 @@ import HeaderPage from "@/components/HeaderPage";
 import { usePathname } from 'next/navigation'
 import Navbar from "@/components/navigations/Navbar";
 import { useEffect, useState } from 'react'
-
+import { motion, AnimatePresence } from 'framer-motion';
 
 const RootLayout = ({ children }: Readonly<{ children: React.ReactNode; }>) => {
   const pathname = usePathname();
@@ -13,8 +13,19 @@ const RootLayout = ({ children }: Readonly<{ children: React.ReactNode; }>) => {
   const [userType, setUserType] = useState<'teacher' | 'staff' | 'admin' | 'guest'>('guest')
   const [login, setLogin] = useState<boolean>(false)
   const [userId, setUserId] = useState('');
+  const [showNavbar, setShowNavbar] = useState(false);
 
   useEffect(() => {
+    const handleScroll = () => {
+      // ถ้าเลื่อนจอลงไปมากกว่า 380px...
+      if (window.scrollY > 100) {
+        setShowNavbar(true); // ...ก็ให้แสดง Navbar
+      } else {
+        setShowNavbar(false); // ...ถ้าน้อยกว่า ก็ให้ซ่อน
+      }
+    };
+    window.addEventListener('scroll', handleScroll);
+
     // read saved userId after login
     const id = typeof window !== 'undefined' ? localStorage.getItem('userId') : null
     if (!id) {
@@ -34,9 +45,9 @@ const RootLayout = ({ children }: Readonly<{ children: React.ReactNode; }>) => {
         if (typeName.toLowerCase().includes('admin')) setUserType('admin')
         else if (typeName.toLowerCase().includes('staff')) setUserType('staff')
         else {
-        setUserType('teacher')
-        setUserId(id)
-      }
+          setUserType('teacher')
+          setUserId(id)
+        }
         setLogin(true)
       } catch (err) {
         setLogin(false)
@@ -64,14 +75,16 @@ const RootLayout = ({ children }: Readonly<{ children: React.ReactNode; }>) => {
     window.addEventListener('storage', storageHandler)
     window.addEventListener('userChanged', handler)
     return () => {
-      window.removeEventListener('storage', storageHandler)
-      window.removeEventListener('userChanged', handler)
+      window.removeEventListener('storage', storageHandler);
+      window.removeEventListener('userChanged', handler);
+      window.removeEventListener('scroll', handleScroll);
     }
   }, [/* runs once on mount */])
 
   return (
     <html lang="en">
       <body className="flex flex-col min-h-screen">
+
         <header>
           {pathname !== '/login' && <HeaderPage />}
 
@@ -82,7 +95,19 @@ const RootLayout = ({ children }: Readonly<{ children: React.ReactNode; }>) => {
             </>
           )}
         </header>
-
+        <AnimatePresence>
+          {showNavbar && ( // <-- ถ้า showNavbar เป็น true, ก็จะแสดง motion.nav
+            <motion.nav
+              className="fixed top-0 left-0 right-0 z-50 bg-white shadow-lg" // ทำให้ Navbar ลอยอยู่ข้างบนสุดเสมอ
+              initial={{ y: -100, opacity: 0 }} // เริ่มต้น: ซ่อนอยู่นอกจอด้านบน
+              animate={{ y: 0, opacity: 1 }}     // ตอนแสดงผล: เลื่อนลงมาที่ตำแหน่งปกติ
+              exit={{ y: -100, opacity: 0 }}      // ตอนหายไป: เลื่อนกลับขึ้นไปซ่อน
+              transition={{ duration: 0.3 }}
+            >
+              <Navbar userType={userType} user_id={userId} />
+            </motion.nav>
+          )}
+        </AnimatePresence>
         <main className="grow">
           {children}
         </main>

@@ -7,7 +7,7 @@ type user = {
   key : number,
 }
 
-const ManagementTableFeature = ({key,  name, email, type, description, loginDate }: user) => {
+const ManagementTableFeature = ({key,  name, email, type, description, loginDate}: user) => {
   const checkType = (type : any) =>{
     if(type === 'อาจารย์'){
       return 'badge badge-soft badge-secondary';

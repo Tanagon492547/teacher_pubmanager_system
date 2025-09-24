@@ -62,17 +62,17 @@ const HeaderPage = () => {
           {displayName ? (
             <>
               <button className="btn btn-ghost rounded-lg" onClick={() => router.push('/proflie')}>
-                <i className="fa-solid fa-user text-xl"></i>
+                <i className="fa-solid fa-user text-xl text-white"></i>
                 <span className="ml-2">{displayName}</span>
               </button>
 
-              <button aria-label="Logout" title="Logout" onClick={handleLogout} className="btn btn-ghost rounded-lg">
+              <button aria-label="Logout" title="Logout" onClick={handleLogout} className="btn btn-ghost rounded-lg text-red-100">
                 <i className="fa-solid fa-right-from-bracket text-xl"></i>
               </button>
             </>
           ) : (
             <button className="btn btn-success rounded-lg " onClick={() => router.push('/login')}>
-              <i className="fa-solid fa-user text-xl"></i>
+              <i className="fa-solid fa-user text-xl text-white"></i>
               <p className="text-success-content"> เข้าสู่ระบบ</p>
             </button>
           )}
