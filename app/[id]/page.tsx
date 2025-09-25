@@ -1,20 +1,38 @@
 import ArticleDetails from "@/components/homes/articledetails/ArticleDetails";
+import { notFound } from 'next/navigation';
 
-//เตรียมรับข้อมูลที่จะส่งมา
+// 1. ปรับแก้ฟังก์ชันดึงข้อมูลให้ฉลาดขึ้น
 async function getArticleData(id: string) {
-  const res = await fetch(`http://localhost:3000/api/articles/${id}`);
-  if (!res.ok) {
-    throw new Error('Failed to fetch data');
+  try {
+    const res = await fetch(`http://localhost:3000/api/articles/${id}`, {
+      cache: 'no-store' // สั่งให้ดึงข้อมูลใหม่เสมอ ไม่เอาจาก cache
+    });
+    
+    if (!res.ok) {
+      return null; 
+    }
+    // ถ้าสำเร็จ ก็ส่งข้อมูลกลับไป
+    return res.json();
+  } catch (error) {
+    console.error("Fetch error:", error);
+    return null; // ถ้า fetch ล้มเหลว (เช่น server ปิด) ก็ถือว่าหาไม่เจอ
   }
-  return res.json();
 }
 
-const ArticleDetailPage = async ({ params, }: {
-  params: Promise<{ id: string }>
-}) => {
-  const { id } = await params;
+// 3. แก้ไข Type ของ params ให้ถูกต้อง
+const ArticleDetailPage = async ({ params }: { params: { id: string } }) => {
+  const { id } = params; // <-- ไม่ต้อง await แล้วนะ
+  
+  const articleData = await getArticleData(id);
+
+  // 4. เช็คว่าได้ข้อมูลกลับมาหรือไม่
+  if (!articleData) {
+    notFound(); // ถ้าไม่ได้ข้อมูล (null) ก็ให้ไปแสดงหน้า 404
+  }
+  
   return (
-    <ArticleDetails id={id} />
+    // 5. ส่งข้อมูลบทความ (articleData) ทั้งก้อนไปให้ ArticleDetails เลย!
+    <ArticleDetails article={articleData} />
   )
 }
 
