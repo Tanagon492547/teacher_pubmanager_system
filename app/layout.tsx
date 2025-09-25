@@ -14,8 +14,14 @@ const RootLayout = ({ children }: Readonly<{ children: React.ReactNode; }>) => {
   const [login, setLogin] = useState<boolean>(false)
   const [userId, setUserId] = useState('');
   const [showNavbar, setShowNavbar] = useState(false);
-
+  
   useEffect(() => {
+    const storedUserId = localStorage.getItem('userId');
+    if (storedUserId) {
+      setUserId(storedUserId);
+      
+    }
+    
     const handleScroll = () => {
       // ถ้าเลื่อนจอลงไปมากกว่า 380px...
       if (window.scrollY > 100) {
@@ -46,7 +52,6 @@ const RootLayout = ({ children }: Readonly<{ children: React.ReactNode; }>) => {
         else if (typeName.toLowerCase().includes('staff')) setUserType('staff')
         else {
           setUserType('teacher')
-          setUserId(id)
         }
         setLogin(true)
       } catch (err) {
@@ -80,6 +85,7 @@ const RootLayout = ({ children }: Readonly<{ children: React.ReactNode; }>) => {
       window.removeEventListener('scroll', handleScroll);
     }
   }, [/* runs once on mount */])
+    
 
   return (
     <html lang="en">
