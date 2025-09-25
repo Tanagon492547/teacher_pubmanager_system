@@ -24,8 +24,7 @@ async function main() {
     create: {
       username: 'teacher1',
       password: 'pass123',
-      login: { create: { age: 45 } },
-      personal: { create: { user_name: 'Somchai S', user_fame: 'Assoc. Prof.', userTypeId: teacherType.id } }
+      personal: { create: { user_name: 'Somchai S', user_fame: 'Assoc. Prof.', userTypeId: teacherType.id, age: 45 } }
     }
   })
 
@@ -35,8 +34,7 @@ async function main() {
     create: {
       username: 'staff1',
       password: 'staffpass',
-      login: { create: { age: 38 } },
-      personal: { create: { user_name: 'Malee M', user_fame: 'Asst. Prof.', userTypeId: staffType.id } }
+      personal: { create: { user_name: 'Malee M', user_fame: 'Asst. Prof.', userTypeId: staffType.id, age: 38 } }
     }
   })
 

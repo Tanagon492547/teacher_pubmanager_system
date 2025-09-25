@@ -1,5 +1,6 @@
 "use client"
 import React, { useState } from "react";
+import { useRouter } from 'next/navigation'
 import { useForm } from "react-hook-form";
 
 type UserForm = {
@@ -14,12 +15,14 @@ email: string;
 username: string;
 password: string;
 role: string;
+ age?: number;
 };
 
 const UserManagement: React.FC = () => {
-const { register, handleSubmit } = useForm<UserForm>();
-const [preview, setPreview] = useState<string | null>(null);
+  const { register, handleSubmit, formState: { errors } } = useForm<UserForm>();
+  const [preview, setPreview] = useState<string | null>(null);
 
+  const router = useRouter()
   const [loading, setLoading] = React.useState(false)
   const onSubmit = async (data: UserForm) => {
     setLoading(true)
@@ -31,7 +34,7 @@ const [preview, setPreview] = useState<string | null>(null);
         user_name: `${data.firstName} ${data.lastName}`,
         user_fame: data.title,
         user_typeid: data.role === 'admin' ? 1 : data.role === 'staff' ? 2 : 3,
-        age: 30
+        age: data.age ?? null
       }
       const res = await fetch('/api/users', {
         method: 'POST',
@@ -39,8 +42,9 @@ const [preview, setPreview] = useState<string | null>(null);
         body: JSON.stringify(payload)
       })
       const json = await res.json()
-      if (!res.ok) throw new Error(json?.error || 'Failed to create user')
-      alert('บันทึกข้อมูลสำเร็จ')
+  if (!res.ok) throw new Error(json?.error || 'Failed to create user')
+  alert('บันทึกข้อมูลสำเร็จ')
+  router.push('/usermanagement')
     } catch (err: any) {
       alert(err.message || 'เกิดข้อผิดพลาด')
     } finally {
@@ -51,6 +55,17 @@ const [preview, setPreview] = useState<string | null>(null);
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      // validate file type and size (<=2MB)
+      const allowed = ['image/jpeg', 'image/png']
+      if (!allowed.includes(file.type)) {
+        alert('รองรับไฟล์ JPG/PNG เท่านั้น')
+        return
+      }
+      const maxSize = 2 * 1024 * 1024 // 2MB
+      if (file.size > maxSize) {
+        alert('ขนาดไฟล์ต้องไม่เกิน 2MB')
+        return
+      }
       const reader = new FileReader();
       reader.onload = () => setPreview(reader.result as string);
       reader.readAsDataURL(file);
@@ -58,162 +73,134 @@ const [preview, setPreview] = useState<string | null>(null);
   };
 
   return (
-    <div className="w-full flex flex-col justify-center items-center px-4 py-10">
-      <div className="w-full max-w-(--8xl) flex flex-col justify-between items-center">
-        <div className="w-full flex flex-col">
-          <p className="text-4xl font-bold text-(--color-base-herder-content) ">
-            User Management
-          </p>
-          <p className="text-(--color-base-herder-content)">สร้างบัญชีผู้ใช้ใหม่</p>
-        </div>
+    <div className="min-h-screen bg-slate-50 p-6 flex justify-center items-start">
+      <div className="w-full max-w-4xl bg-white rounded-2xl shadow-md overflow-hidden">
+        <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Left: Title + subtitle */}
+          <div className="md:col-span-3">
+            <h1 className="text-2xl font-semibold text-slate-800">User Management</h1>
+            <p className="text-sm text-slate-500">สร้างบัญชีผู้ใช้ใหม่ — กรอกข้อมูลให้ครบแล้วกด ยืนยัน</p>
+          </div>
 
+          {/* Avatar / Image upload */}
+          <div className="flex flex-col items-center gap-3 md:col-span-1">
+            <div className="w-36 h-36 rounded-full bg-slate-100 overflow-hidden flex items-center justify-center border">
+              {preview ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={preview} alt="Preview" className="w-full h-full object-cover" />
+              ) : (
+                <div className="text-slate-400">ไม่มีรูป</div>
+              )}
+            </div>
+            <label className="text-sm text-blue-600 cursor-pointer">
+              เปลี่ยนรูป
+              <input type="file" className="hidden" onChange={handleImageChange} />
+            </label>
+            <p className="text-xs text-slate-400 text-center">JPEG/PNG, ขนาดไม่เกิน 2MB</p>
+          </div>
 
-        {/* Upload รูป */}
-<div className="flex flex-col items-center mb-6">
-  {/* วงกลมแสดงรูป */}
-  <label className="w-32 h-32 border rounded-full flex items-center justify-center overflow-hidden bg-blue-100 cursor-pointer">
-    {preview ? (
-      <img src={preview} alt="Preview" className="w-full h-full object-cover" />
-    ) : (
-      <span className="text-gray-500">ไม่มีรูป</span>
-    )}
-    <input type="file" className="hidden" onChange={handleImageChange} />
-  </label>
+          {/* Form area */}
+          <form onSubmit={handleSubmit(onSubmit)} className="md:col-span-2 space-y-4">
+            <div className="bg-slate-50 p-4 rounded-lg">
+              <label className="block text-sm text-slate-700 mb-2">ประเภทผู้ใช้</label>
+              <div className="flex gap-4">
+                <label className="inline-flex items-center gap-2">
+                  <input type="radio" value="admin" {...register("role")} />
+                  <span className="text-sm">แอดมิน</span>
+                </label>
+                <label className="inline-flex items-center gap-2">
+                  <input type="radio" value="staff" {...register("role")} />
+                  <span className="text-sm">เจ้าหน้าที่</span>
+                </label>
+                <label className="inline-flex items-center gap-2">
+                  <input type="radio" value="teacher" {...register("role")} />
+                  <span className="text-sm">อาจารย์</span>
+                </label>
+              </div>
+            </div>
 
-  {/* ปุ่มเพิ่มรูปอยู่นอกวงกลม */}
-  <label className="mt-3 cursor-pointer transition">
-    เพิ่มรูป
-    <input type="file" className="hidden" onChange={handleImageChange} />
-  </label>
-</div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <label className="text-sm text-slate-600">คำนำหน้า</label>
+                <select {...register("title")} className="mt-1 block w-full border rounded p-2 bg-white">
+                  <option value="">เลือก</option>
+                  <option value="นาย">นาย</option>
+                  <option value="นาง">นาง</option>
+                  <option value="นางสาว">นางสาว</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-sm text-slate-600">ชื่อ</label>
+                <input {...register("firstName", { required: 'กรุณากรอกชื่อ' })} placeholder="ชื่อ" className="mt-1 block w-full border rounded p-2" />
+                {errors.firstName && <p className="text-xs text-red-600">{errors.firstName.message}</p>}
+              </div>
+              <div>
+                <label className="text-sm text-slate-600">นามสกุล</label>
+                <input {...register("lastName", { required: 'กรุณากรอกนามสกุล' })} placeholder="นามสกุล" className="mt-1 block w-full border rounded p-2" />
+                {errors.lastName && <p className="text-xs text-red-600">{errors.lastName.message}</p>}
+              </div>
+            </div>
 
-      {/* ประเภทผู้ใช้ */}
-      <form onSubmit={handleSubmit(onSubmit)} >
-      <div className="bg-blue-100 w-full p-4 rounded-xl  flex justify-between my-5">
-        <div>
-            <p>ประเภทผู้ใช้</p>
-        </div>
-        <div className="flex gap-5">
-          <label className="flex items-center gap-1">
-          <input type="radio" value="admin" {...register("role")} /> แอดมิน
-        </label>
-        <label className="flex items-center gap-1">
-          <input type="radio" value="staff" {...register("role")} /> เจ้าหน้าที่
-        </label>
-        <label className="flex items-center gap-1">
-          <input type="radio" value="teacher" {...register("role")} /> อาจารย์
-        </label>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <label className="text-sm text-slate-600">เพศ</label>
+                <select {...register("gender")} className="mt-1 block w-full border rounded p-2 bg-white">
+                  <option value="">ไม่ระบุ</option>
+                  <option value="ชาย">ชาย</option>
+                  <option value="หญิง">หญิง</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-sm text-slate-600">อายุ</label>
+                <input type="number" {...register('age', { valueAsNumber: true })} placeholder="อายุ" className="mt-1 block w-full border rounded p-2" />
+              </div>
+              <div>
+                <label className="text-sm text-slate-600">ตำแหน่งทางวิชาการ</label>
+                <input {...register("position")} placeholder="ตำแหน่ง" className="mt-1 block w-full border rounded p-2" />
+              </div>
+              <div>
+                <label className="text-sm text-slate-600">คณะ</label>
+                <input {...register("faculty")} placeholder="คณะ" className="mt-1 block w-full border rounded p-2" />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="text-sm text-slate-600">สาขา/หน่วยงาน</label>
+                <input {...register("department")} placeholder="สาขา/หน่วยงาน" className="mt-1 block w-full border rounded p-2" />
+              </div>
+              <div>
+                <label className="text-sm text-slate-600">Email</label>
+                <input {...register("email", { required: 'กรุณากรอกอีเมล', pattern: { value: /^[^@\s]+@[^@\s]+\.[^@\s]+$/, message: 'รูปแบบอีเมลไม่ถูกต้อง' } })} placeholder="Email" type="email" className="mt-1 block w-full border rounded p-2" />
+                {errors.email && <p className="text-xs text-red-600">{errors.email.message}</p>}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="text-sm text-slate-600">Username</label>
+                <input {...register("username", { required: 'กรุณากรอกชื่อผู้ใช้', minLength: { value: 3, message: 'ต้องมีอย่างน้อย 3 ตัวอักษร' } })} placeholder="Username" className="mt-1 block w-full border rounded p-2" />
+                {errors.username && <p className="text-xs text-red-600">{errors.username.message}</p>}
+              </div>
+              <div>
+                <label className="text-sm text-slate-600">Password</label>
+                <input {...register("password", { required: 'กรุณากรอกรหัสผ่าน', minLength: { value: 6, message: 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร' } })} placeholder="Password" type="password" className="mt-1 block w-full border rounded p-2" />
+                {errors.password && <p className="text-xs text-red-600">{errors.password.message}</p>}
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-2">
+              <button type="button" className="px-4 py-2 rounded border text-slate-700 bg-white" onClick={() => window.history.back()}>
+                ยกเลิก
+              </button>
+              <button type="submit" className="px-4 py-2 rounded bg-blue-600 text-white" disabled={loading}>
+                {loading ? 'กำลังบันทึก...' : 'ยืนยัน'}
+              </button>
+            </div>
+          </form>
         </div>
       </div>
-      
-      <div className="bg-blue-100 w-full p-4 rounded-xl space-y-3">
-        <p>รายละเอียดทั่วไป</p>
-        <hr />
-        <div className="flex gap-2">
-          <div>
-            <p>คำนำหน้า</p>
-          <select {...register("title")} className="border rounded p-2 w-25">
-            <option value="" selected>คำนำหน้า</option>
-            <option value="นาย">นาย</option>
-            <option value="นาง">นาง</option>
-            <option value="นางสาว">นางสาว</option>
-          </select>
-          </div>
-          <div>
-            <p>ชื่อ</p>
-          <input
-            {...register("firstName")}
-            placeholder="ชื่อ"
-            className="border rounded p-2 flex-1 w-150"
-          />
-          </div>
-          <div>
-            <p>นามสกุล</p>
-          <input
-            {...register("lastName")}
-            placeholder="นามสกุล"
-            className="border rounded p-2 flex-1 w-150"
-          />
-          </div>
-        </div>
-
-        <div>
-          <p>เพศ</p>
-        <select {...register("gender")} className="border rounded p-2 w-25">
-          <option value="">เพศ</option>
-          <option value="ชาย">ชาย</option>
-          <option value="หญิง">หญิง</option>
-        </select>
-        </div>
-
-        <div>
-          <p>ตำแหน่งทางวิชาการ</p>
-        <input
-          {...register("position")}
-          placeholder="ตำแหน่งทางวิชาการ"
-          className="border rounded p-2 w-full"
-        />
-        </div>
-        <div>
-          <p>คณะ</p>
-        <input
-          {...register("faculty")}
-          placeholder="คณะ"
-          className="border rounded p-2 w-full"
-        />
-        </div>
-        <div>
-          <p>สาขา/หน่วยงาน</p>
-        <input
-          {...register("department")}
-          placeholder="สาขา/หน่วยงาน"
-          className="border rounded p-2 w-full"
-        />
-        </div>
-        <div>
-          <p>Email</p>
-        <input
-          {...register("email")}
-          placeholder="Email"
-          type="email"
-          className="border rounded p-2 w-full"
-        />
-        </div>
-        <div>
-          <p>Username</p>
-        <input
-          {...register("username")}
-          placeholder="Username"
-          className="border rounded p-2 w-full"
-        />
-        </div>
-        <div>
-          <p>Password</p>
-        <input
-          {...register("password")}
-          placeholder="Password"
-          type="password"
-          className="border rounded p-2 w-full"
-        />
-        </div>
-
-        <div className="flex justify-end gap-3 pt-3">
-          <button type="button" className="bg-gray-400 text-white px-4 py-2 rounded">
-            ยกเลิก
-          </button>
-          <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">
-            ยืนยัน
-          </button>
-        </div>
-      </div>
-      </form>
-      </div>
-
-
     </div>
-    
-
-
   );
 };
 
