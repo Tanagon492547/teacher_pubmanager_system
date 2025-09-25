@@ -147,7 +147,7 @@ const paginationFeature = ({ mockData, pathName, rowsValue }: data) => {
                   {/* slice เเบ่งหน้า */}
                   {varlueResult.map((value, key) => (
 
-                    <ManagementTableFeature key={key} name={value.name} email={'ยังไม่มีตัวเเปรอีเมล์'} type={value.type} description={value.detail} loginDate={'ยังไม่มีตัวเเปรเข้าใช้'} />
+                    <ManagementTableFeature key={value.userId ?? key} id={value.userId ?? key} name={value.name} email={'ยังไม่มีตัวเเปรอีเมล์'} type={value.type} description={value.detail} loginDate={'ยังไม่มีตัวเเปรเข้าใช้'} />
 
                   ))}
                 </tbody>

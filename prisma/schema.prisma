@@ -19,7 +19,7 @@ model Login {
   id     Int  @id @default(autoincrement())
   user   UserAuthentication @relation(fields: [userId], references: [id])
   userId Int  @unique
-  age    Int?
+  // age moved to Personal
 }
 
 model Personal {
@@ -28,6 +28,7 @@ model Personal {
   userId     Int    @unique
   user_name  String
   user_fame  String?
+  age        Int?
   user_type  UserType @relation(fields: [userTypeId], references: [id])
   userTypeId Int
 }
