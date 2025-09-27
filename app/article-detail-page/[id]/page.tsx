@@ -21,7 +21,7 @@ async function getArticleData(id: string) {
 
 // 3. แก้ไข Type ของ params ให้ถูกต้อง
 const ArticleDetailPage = async ({ params }: { params: { id: string } }) => {
-  const { id } = params; // <-- ไม่ต้อง await แล้วนะ
+  const { id } = await params;
   
   const articleData = await getArticleData(id);
 

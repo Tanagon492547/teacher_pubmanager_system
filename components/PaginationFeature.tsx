@@ -55,7 +55,7 @@ const paginationFeature = ({ mockData, pathName, rowsValue }: data) => {
               </thead>
               <tbody >
                 {varlueResult.map((value, index) => {
-                  return <TableFeature key={index} index={index + 1} title={value.หัวข้อ} uploadDate={value.วันที่อัปโหลด} publishYear={value.ปีที่พิมพ์} type={value.ประเภท} status={value.สถานะ} pathName={pathName} />
+                  return <TableFeature key={index} articleId={value.articleId} index={index + 1} title={value.article_name} uploadDate={value.uploadDate} publishYear={value.published_year} type={value.articleType} status={value.article_status} pathName={pathName} />
                 })}
               </tbody>
             </table>
@@ -107,6 +107,9 @@ const paginationFeature = ({ mockData, pathName, rowsValue }: data) => {
                       field={value.field}
                       offset={value.offset}
                       url={value.url}
+                      abstract={value.abstract}
+                      articleType={value.articleType}
+                      publishedYear={value.publishedYear}
                     />
                   </motion.tr>
                 ))}

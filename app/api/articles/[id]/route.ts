@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import prisma from '../../../lib/prisma' // <-- แก้ path ไปยัง prisma client ของเราให้ถูกต้องนะ
+import prisma from '../../../../lib/prisma'; // <-- แก้ path ไปยัง prisma client ของเราให้ถูกต้องนะ
 
 // ฟังก์ชัน GET นี้จะทำงานเมื่อมีการเรียกมาที่ /api/articles/[id]
 // เช่น /api/articles/123
@@ -8,9 +8,13 @@ export async function GET(
   { params }: { params: { id: string } } // params คือ object ที่มี id ของเราอยู่ข้างใน
 ) {
   try {
-    const id = params.id;
+    // **ส่วนที่แก้ไข!** //
+    // params ไม่ใช่ Promise นะเหมียว! มันเป็น object ธรรมดาๆ
+    // เราเลยสามารถดึง id ออกมาได้โดยตรงเลย ไม่ต้องใช้ await จ้ะ
 
-    // --- นี่คือ Logic จากใน Canvas ที่เราเอามาปรับใช้นะ! ---
+    const {id} = await params;
+
+    console.log('ได้รับคำขอสำหรับบทความ ID: ', id)
 
     // 1. แปลง id ที่ได้จาก URL ให้เป็นตัวเลข
     const numericId = Number(id);
@@ -29,8 +33,6 @@ export async function GET(
       return NextResponse.json({ error: "ไม่พบบทความนี้" }, { status: 404 });
     }
     
-    // --- จบ Logic จาก Canvas ---
-
     // 4. ถ้าหาเจอ ก็ให้ส่งข้อมูลบทความกลับไป
     return NextResponse.json(article);
 
@@ -39,3 +41,4 @@ export async function GET(
     return NextResponse.json({ error: "เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์" }, { status: 500 });
   }
 }
+

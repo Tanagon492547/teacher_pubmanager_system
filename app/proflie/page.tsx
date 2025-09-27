@@ -12,13 +12,13 @@ type ProfileData = {
   personal: {
     user_name: string;
     user_fame: string | null;
-    gender_user?:string;
-    faculty_user? : string;
-    department_user?: string;
-    numberPhone_user?: string;
-    email_user? : string;
+    gender?:string;
+    faculty? : string;
+    department?: string;
+    number_phone?: string;
+    email? : string;
     image_user? : string;
-    academic_user?:string;
+    academic?:string;
     // ... field อื่นๆ จาก personal ...
   } | null;
 };
@@ -78,14 +78,14 @@ const ProfilePage = () => {
     <div className="bg-gray-100 min-h-screen p-8">
       <ProfileCard 
         // 8. ส่งข้อมูลจาก State ของเราไปให้ ProfileCard
-        academic_user={profile.personal?.academic_user || 'ยังไม่มีคำนำหน้า'}
+        academic_user={profile.personal?.academic || 'ยังไม่มีคำนำหน้า'}
         fname_user={firstName? firstName : 'ไม่พบข้อมูล'}
         lname_user={lastName? lastName : 'ไม่พบข้อมูล'}
-        gender_user={profile.personal?.gender_user || 'ไม่พบข้อมูล'}
-        faculty_user={profile.personal?.faculty_user || 'ไม่พบข้อมูล'}
-        department_user={profile.personal?.department_user || 'ไม่พบข้อมูล'}
-        numberPhone_user={profile.personal?.numberPhone_user || 'ไม่พบข้อมูล'}
-        email_user={profile.personal?.email_user || 'ไม่พบข้อมูล'}
+        gender_user={profile.personal?.gender || 'N/A'}
+        faculty_user={profile.personal?.faculty || 'ไม่พบข้อมูล'}
+        department_user={profile.personal?.department || 'ไม่พบข้อมูล'}
+        numberPhone_user={profile.personal?.number_phone || 'ไม่พบข้อมูล'}
+        email_user={profile.personal?.email || 'ไม่พบข้อมูล'}
         image_user={profile.personal?.image_user || ""}
       />
     </div>
