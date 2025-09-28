@@ -21,6 +21,9 @@ type ArticleListItem = {
 const ArticleValidationPage = () => {
   const pathName = usePathname();
   const [data, setData] = useState<ArticleListItem[] | null>(null);
+  // (สามารถเพิ่ม pagination UI ภายหลังได้)
+  const page = 1;
+  const pageSize = 50;
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -29,10 +32,18 @@ const ArticleValidationPage = () => {
     async function load() {
       try {
         setLoading(true);
-        const res = await fetch('/api/articles-list');
+        const res = await fetch(`/api/articles-list?page=${page}&pageSize=${pageSize}`);
         if (!res.ok) throw new Error('โหลดข้อมูลล้มเหลว');
         const json = await res.json();
-        if (!ignore) setData(json);
+        // รองรับทั้งโครงสร้างเก่า (array) และใหม่ ({items:[]})
+        const items: ArticleListItem[] = Array.isArray(json) ? json : json.items || [];
+        if (!ignore) {
+          setData(items);
+          if (!Array.isArray(json)) {
+            // setTotal(json.total || items.length); // Removed unused state
+            // setPageSize(json.pageSize || pageSize); // Removed unused state
+          }
+        }
       } catch (e: unknown) {
         const message = e instanceof Error ? e.message : 'เกิดข้อผิดพลาด';
         if (!ignore) setError(message);
@@ -42,7 +53,7 @@ const ArticleValidationPage = () => {
     }
     load();
     return () => { ignore = true; };
-  }, []);
+  }, [page, pageSize]);
 
   return (
     <div className="w-full flex flex-col justify-center items-center px-4 py-10">
@@ -79,7 +90,7 @@ const ArticleValidationPage = () => {
 
         {loading && <div className="w-full flex justify-center py-20"><span className="loading loading-spinner loading-lg" /> กำลังโหลด...</div>}
         {error && !loading && <div className="alert alert-error w-full">{error}</div>}
-        {data && !loading && (() => {
+        {data && !loading && data.length > 0 && (() => {
           // แปลงข้อมูลจาก API ให้เข้ากับโครงสร้างที่ Table ใช้
           const statusMap: Record<string, string> = {
             draft: 'รอการตรวจสอบ',
@@ -98,7 +109,7 @@ const ArticleValidationPage = () => {
           }));
           return <PaginationFeature pathName={pathName} mockData={mapped} rowsValue={11} />;
         })()}
-        {!loading && data?.length === 0 && <div className="w-full text-center py-10 text-gray-500">ไม่มีข้อมูลบทความ</div>}
+        {!loading && (data == null || data.length === 0) && <div className="w-full text-center py-10 text-gray-500">ไม่มีข้อมูลบทความ</div>}
       </div>
     </div>
   );
