@@ -17,8 +17,10 @@ type Article = {
 interface Props { article: Article }
 
 const ReviewArticleForm: React.FC<Props> = ({ article }) => {
-  const [rights, setRights] = useState(article.publish_status || 'private');
-  const [fileName, setFileName] = useState<string>(article.article_file ? article.article_file.split('/').pop() || '' : '');
+  // Rights now shown as text only (no toggle per user request to display details as text)
+  const [rights] = useState(article.publish_status || 'private');
+  // Derive file name for download link
+  const fileName = article.article_file ? article.article_file.split('/').pop() || '' : '';
   const [comment, setComment] = useState('');
   // loading state: 'approved' | 'revision'
   const [loading, setLoading] = useState<'approved' | 'revision' | null>(null);
@@ -37,10 +39,7 @@ const ReviewArticleForm: React.FC<Props> = ({ article }) => {
       formData.append('status', status);
       formData.append('rights', rights);
       formData.append('comment', comment);
-      const fileInput = document.getElementById('article_file') as HTMLInputElement | null;
-      if (fileInput?.files && fileInput.files.length > 0) {
-        formData.append('article_file', fileInput.files[0]);
-      }
+      // Removed file upload handling (changed to download only display)
       const res = await fetch(`/api/review-article/${article.id}`, { method: 'POST', body: formData });
       const json = await res.json();
       if (!res.ok || json.error) {
@@ -59,104 +58,79 @@ const ReviewArticleForm: React.FC<Props> = ({ article }) => {
   return (
     <div className="w-full flex flex-col items-center">
       <div className="w-full max-w-5xl bg-white border rounded-2xl p-10 space-y-10">
-        {/* Section: Author */}
-  <div className="space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            <div className="col-span-3">
-              <label className="block text-sm font-medium mb-1">อาจารย์เจ้าของบทความ</label>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <input value={contributorTitle} readOnly className="input input-bordered bg-gray-100" />
-                <input value={firstname || ''} readOnly className="input input-bordered bg-gray-100" />
-                <input value={lastname || ''} readOnly className="input input-bordered bg-gray-100" />
-              </div>
+        {/* Section: Author (display only) */}
+        <section className="space-y-4">
+          <h2 className="text-base font-semibold">ข้อมูลผู้เขียน</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+            <div>
+              <p className="text-gray-500">คำนำหน้า</p>
+              <p className="font-medium">{contributorTitle}</p>
             </div>
-            <div className="col-span-3">
-              <label className="block text-sm font-medium mb-1">ผู้ร่วมบทความ</label>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <input placeholder="อ." className="input input-bordered" />
-                <input placeholder="ชื่อ" className="input input-bordered" />
-                <input placeholder="นามสกุล" className="input input-bordered" />
-              </div>
-              <button type="button" className="btn btn-ghost mt-2 text-blue-600"><i className="fa-solid fa-circle-plus" /> เพิ่มผู้ร่วมบทความ</button>
+            <div>
+              <p className="text-gray-500">ชื่อ</p>
+              <p className="font-medium">{firstname || '-'}</p>
+            </div>
+            <div>
+              <p className="text-gray-500">นามสกุล</p>
+              <p className="font-medium">{lastname || '-'}</p>
             </div>
           </div>
-        </div>
+        </section>
 
-        {/* Section: Article Info */}
-        <div className="space-y-6">
+        {/* Section: Article Info (display only) */}
+        <section className="space-y-6">
           <div>
-            <label className="block text-sm font-medium">ชื่อผลงาน <span className="text-red-500">*</span></label>
-            <input defaultValue={article.article_name} className="input input-bordered w-full" readOnly />
+            <p className="text-gray-500 text-sm mb-1">ชื่อผลงาน</p>
+            <p className="font-semibold break-words">{article.article_name}</p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            <div className="sm:col-span-3">
-              <label className="block text-sm font-medium">ประเภทงาน <span className="text-red-500">*</span></label>
-              <select defaultValue={article.articleType || ''} className="select select-bordered w-full" disabled>
-                <option>{article.articleType || '—'}</option>
-              </select>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-sm">
+            <div className="sm:col-span-1">
+              <p className="text-gray-500 mb-1">ประเภทงาน</p>
+              <p className="font-medium">{article.articleType || '—'}</p>
             </div>
-            <div className="sm:col-span-3">
-              <label className="block text-sm font-medium">ตำแหน่งอาจารย์ <span className="text-red-500">*</span></label>
-              <input value={contributorTitle} readOnly className="input input-bordered w-full bg-gray-100" />
+            <div className="sm:col-span-1">
+              <p className="text-gray-500 mb-1">ตำแหน่งอาจารย์</p>
+              <p className="font-medium">{contributorTitle}</p>
             </div>
-            <div className="sm:col-span-3">
-              <label className="block text-sm font-medium">วัน เดือน ปี <span className="text-red-500">*</span></label>
-              <input type="date" defaultValue={article.published_year ? `${article.published_year}-01-01` : ''} className="input input-bordered w-full" readOnly />
+            <div className="sm:col-span-1">
+              <p className="text-gray-500 mb-1">ปีที่เผยแพร่</p>
+              <p className="font-medium">{article.published_year ?? '—'}</p>
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium">บทคัดย่อ</label>
-            <textarea defaultValue={article.abstract || ''} className="textarea textarea-bordered w-full min-h-40" readOnly />
+            <p className="text-gray-500 text-sm mb-1">บทคัดย่อ</p>
+            <div className="p-4 rounded-md bg-gray-50 text-sm whitespace-pre-wrap leading-relaxed border">{article.abstract || '—'}</div>
           </div>
-        </div>
+        </section>
 
-        {/* Section: Rights & Upload */}
-        <div className="space-y-6">
+        {/* Section: Rights & File (display only) */}
+        <section className="space-y-4 text-sm">
           <div>
-            <label className="block text-sm font-medium">สิทธิ์ในการเผยแพร่บทความ</label>
-            <div className="mt-2 flex gap-6">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input type="radio" className="radio radio-primary" value="public" checked={rights === 'public'} onChange={() => setRights('public')} />
-                <span>เผยแพร่ (Public)</span>
-              </label>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input type="radio" className="radio" value="private" checked={rights === 'private'} onChange={() => setRights('private')} />
-                <span>ไม่เผยแพร่ (Private)</span>
-              </label>
-            </div>
+            <p className="text-gray-500 mb-1">สิทธิ์ในการเผยแพร่</p>
+            <p className="inline-flex items-center gap-2 font-medium">
+              <i className="fa-solid fa-shield" />
+              {rights === 'public' ? 'เผยแพร่ (Public)' : 'ไม่เผยแพร่ (Private)'}
+            </p>
           </div>
-          <div className="relative">
-            <label className="block text-sm font-medium">อัปโหลดไฟล์บทความ (.PDF)</label>
-            {/* อัปโหลดไฟล์ */}
-            <label
-              htmlFor={rights === 'public' ? 'article_file' : undefined}
-              className={`mt-2 border-2 border-dashed rounded-xl w-full flex flex-col items-center justify-center p-6 cursor-pointer transition hover:bg-gray-50 ${rights === 'private' ? 'opacity-60' : ''}`}
-              onClick={() => {
-                if (rights === 'private') {
-                  // ช่วยผู้ใช้: เปลี่ยนเป็น public แล้วเปิด input
-                  setRights('public');
-                  // เปิดไฟล์เลือกหลังจาก state เปลี่ยนเล็กน้อย
-                  setTimeout(() => {
-                    const input = document.getElementById('article_file') as HTMLInputElement | null;
-                    input?.click();
-                  }, 50);
-                }
-              }}
-            >
-              <i className="fa-solid fa-cloud-arrow-up text-2xl text-gray-500" />
-              <span className="text-sm mt-2">{fileName || (rights === 'private' ? 'ต้องเลือก Public ก่อน (คลิกที่นี่)' : 'คลิกเพื่อเลือกไฟล์')}</span>
-              <span className="text-xs text-gray-500">รองรับเฉพาะ .PDF</span>
-              <input id="article_file" type="file" accept=".pdf" className="hidden" onChange={(e) => setFileName(e.target.files?.[0]?.name || '')} />
-            </label>
-            {rights === 'private' && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                <span className="text-[11px] bg-white/80 px-3 py-1 rounded-md border">ตอนนี้เป็น Private – คลิกเพื่อเปลี่ยนเป็น Public แล้วอัปโหลด</span>
-              </div>
+          <div>
+            <p className="text-gray-500 mb-1">ไฟล์บทความ (.PDF)</p>
+            {article.article_file ? (
+              <a
+                href={article.article_file}
+                download={fileName || undefined}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-md border bg-white hover:bg-gray-100 transition text-blue-600"
+              >
+                <i className="fa-solid fa-file-pdf" /> ดาวน์โหลด {fileName || 'ไฟล์'}
+              </a>
+            ) : (
+              <span className="italic text-gray-400">ไม่มีไฟล์แนบ</span>
             )}
           </div>
-        </div>
+        </section>
 
-        {/* Section: Comment */}
+        {/* Section: Comment (still editable for reviewer) */}
         <div>
           <label className="block text-sm font-medium mb-2">ความคิดเห็นจากพนักงาน</label>
             <textarea value={comment} onChange={(e) => setComment(e.target.value)} placeholder="พิมพ์ความคิดเห็น..." className="textarea textarea-bordered w-full min-h-48" />
