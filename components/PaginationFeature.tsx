@@ -98,7 +98,7 @@ const PaginationFeature = ({ mockData, pathName, rowsValue }: data) => {
                       duration: 0.5,
                       delay: index * 0.05 // 4. (เทคนิคพิเศษ!) หน่วงเวลาแต่ละแถวเล็กน้อย
                     }}
-                    className="w-full"
+                    className="w-full  "
                   >
                     {/* 5. SearchResultItem ต้อง return <td>...</td> ออกมานะ */}
                     <SearchResultItem
