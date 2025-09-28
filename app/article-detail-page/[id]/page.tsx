@@ -11,8 +11,18 @@ async function getArticleData(id: string) {
     if (!res.ok) {
       return null; 
     }
-    // ถ้าสำเร็จ ก็ส่งข้อมูลกลับไป
-    return res.json();
+    // ป้องกันกรณี body ว่างหรือ JSON พัง -> ใช้ text() ก่อนแล้วค่อย parse
+    const raw = await res.text();
+    if (!raw) {
+      console.warn('API /articles returned empty body');
+      return null;
+    }
+    try {
+      return JSON.parse(raw);
+    } catch (parseErr) {
+      console.error('Invalid JSON from /api/articles:', parseErr, 'raw =', raw);
+      return null;
+    }
   } catch (error) {
     console.error("Fetch error:", error);
     return null; // ถ้า fetch ล้มเหลว (เช่น server ปิด) ก็ถือว่าหาไม่เจอ

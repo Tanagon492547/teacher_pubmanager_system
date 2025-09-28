@@ -15,7 +15,7 @@ type data = {
   rowsValue: number,
 }
 
-const paginationFeature = ({ mockData, pathName, rowsValue }: data) => {
+const PaginationFeature = ({ mockData, pathName, rowsValue }: data) => {
   const [tablePage, setTablePage] = useState(1); // หน้าเริ่มต้นของตาราง
   const [rowsPerPage, setRowsPerPage] = useState(10); // จำนวนเเถวต่อหน้า 
   const arrData = Object.values(mockData); // แปลง object เป็น array ของ values
@@ -24,10 +24,11 @@ const paginationFeature = ({ mockData, pathName, rowsValue }: data) => {
 
   useEffect(() => {
     setRowsPerPage(rowsValue)
-  })
+  }, [rowsValue])
 
-  const tableBorder = (pathName: any) => {
-    if (pathName !== '/' && pathName !== pathname.startsWith('/articlemanagement') && pathName !== '/usermanagement') {
+  const tableBorder = (pathName: string | undefined) => {
+    const isArticleManagement = pathname.startsWith('/articlemanagement');
+    if (pathName !== '/' && !isArticleManagement && pathName !== '/usermanagement') {
       return 'overflow-x-auto  border-2 border-(--color-primary)/50 rounded-xl';
     } else {
       return '';
@@ -121,9 +122,9 @@ const paginationFeature = ({ mockData, pathName, rowsValue }: data) => {
             <table className=" w-full">
               <tbody className="w-full">
                 {/* slice เเบ่งหน้า */}
-                {varlueResult.map((value, key) => (
-                  <tr key={key} className="w-full">
-                    <TeacherArticeTableFeature title={value.title} athor={value.athor} field={value.field} offset={value.offset} url={value.url} status={value.status} />
+                {varlueResult.map((value: { articleId?: number; id?: number; title?: string; article_name?: string; athor?: string; field?: string; offset?: string; url?: string; status?: string; article_status?: string }, key) => (
+                  <tr key={value.articleId || value.id || key} className="w-full">
+                    <TeacherArticeTableFeature articleId={value.articleId || value.id} title={value.title || value.article_name} athor={value.athor} field={value.field} offset={value.offset} url={value.url} status={value.status || value.article_status} />
                   </tr>
                 ))}
               </tbody>
@@ -176,5 +177,5 @@ const paginationFeature = ({ mockData, pathName, rowsValue }: data) => {
   );
 }
 
-export default paginationFeature;
+export default PaginationFeature;
 

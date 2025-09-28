@@ -15,6 +15,7 @@ export type DetailedArticleListItem = {
   department: string | null;
   abstract: string | null;
   downloadPath: string | null;
+  article_status: string | null; // current workflow status
 };
 
 // ฟังก์ชัน GET นี้จะทำงานเมื่อมีการเรียกมาที่ /api/articles-list
@@ -57,6 +58,7 @@ export async function GET() {
         department: personalInfo?.department ?? null,
         abstract: article.abstract,
         downloadPath: article.article_file,
+        article_status: article.article_status ?? null,
       };
     });
     

@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from 'react';
-import { reviewArticle } from '@/hooks/posts/actions';
+// ใช้เรียก API route แทนการ import server action โดยตรง
 
 type Article = {
   id: number;
@@ -14,9 +14,7 @@ type Article = {
   contributor?: { contributor_name: string; academic_title: string | null } | null;
 };
 
-interface Props {
-  article: Article;
-}
+interface Props { article: Article }
 
 const ReviewArticleForm: React.FC<Props> = ({ article }) => {
   const [rights, setRights] = useState(article.publish_status || 'private');
@@ -43,14 +41,16 @@ const ReviewArticleForm: React.FC<Props> = ({ article }) => {
       if (fileInput?.files && fileInput.files.length > 0) {
         formData.append('article_file', fileInput.files[0]);
       }
-      const result = await reviewArticle(article.id, formData);
-      if (result?.error) {
-        setError(result.error);
+      const res = await fetch(`/api/review-article/${article.id}`, { method: 'POST', body: formData });
+      const json = await res.json();
+      if (!res.ok || json.error) {
+        setError(json.error || 'ไม่สามารถบันทึกได้');
       } else {
         setSuccess(status === 'approved' ? 'อนุมัติบทความสำเร็จ' : 'ส่งกลับเพื่อแก้ไขสำเร็จ');
       }
-    } catch {
-      setError('เกิดข้อผิดพลาดในการบันทึก');
+    } catch (e) {
+      console.error(e);
+      setError('เกิดข้อผิดพลาดในการบันทึก (เครือข่าย)');
     } finally {
       setLoading(null);
     }

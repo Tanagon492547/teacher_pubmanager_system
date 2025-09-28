@@ -313,3 +313,91 @@ export async function getArticleForEdit(articleId: number) {
   // 5. ถ้าทุกอย่างผ่านฉลุย ก็ส่งข้อมูลบทความกลับไป
   return article;
 }
+
+// =================================================================
+//   ACTION 3: สำหรับ "อนุมัติ / ส่งกลับแก้ไข" บทความ (กระบวนการตรวจสอบ)
+// =================================================================
+// statusValue: 'approved' | 'revision' (หรือค่าอื่นๆ ตามที่ UI ส่งมา)
+// comment: ความคิดเห็นของเจ้าหน้าที่ (เก็บไว้ในตาราง Category ชั่วคราว)
+// rights: public | private (ถ้า reviewer ปรับเปลี่ยนสิทธิ์)
+// newFile: อัปโหลดไฟล์ใหม่ (เฉพาะเมื่อ rights === 'public')
+export async function reviewArticle(
+  articleId: number,
+  formData: FormData
+): Promise<{ error?: string; success?: boolean }> {
+  try {
+    const cookieStore = await cookies();
+    const userIdCookie = cookieStore.get('userId');
+    if (!userIdCookie) {
+      return { error: 'ไม่พบสิทธิ์ผู้ใช้งาน (กรุณาเข้าสู่ระบบ)' };
+    }
+
+    const statusValue = (formData.get('status') as string) || '';
+    const rights = (formData.get('rights') as string) || undefined; // public | private | undefined
+    const comment = (formData.get('comment') as string) || '';
+    const file = formData.get('article_file') as File | null;
+
+    // 1. ตรวจสอบว่าบทความมีอยู่จริง
+    const article = await prisma.articleDB.findUnique({ where: { id: articleId } });
+    if (!article) {
+      return { error: 'ไม่พบบทความนี้' };
+    }
+
+    // 2. เตรียมข้อมูลอัปเดต
+    const updateData: any = {};
+    if (statusValue) updateData.article_status = statusValue;
+    if (rights) updateData.publish_status = rights;
+
+    // 3. ถ้ามีไฟล์ใหม่และสิทธิ์ = public -> อัปโหลดแทนที่
+    if (file && file.size > 0 && rights === 'public') {
+      const extension = path.extname(file.name);
+      const newFileName = `${articleId}${extension}`; // ใช้ชื่อไฟล์ตาม ID เดิม
+      const uploadDir = path.join(process.cwd(), 'public', 'file', 'pdf');
+      try {
+        await stat(uploadDir);
+      } catch (e: any) {
+        if (e.code === 'ENOENT') {
+          await mkdir(uploadDir, { recursive: true });
+        } else {
+          throw e;
+        }
+      }
+      const bytes = await file.arrayBuffer();
+      const buffer = Buffer.from(bytes);
+      const filePath = path.join(uploadDir, newFileName);
+      await writeFile(filePath, buffer);
+      updateData.article_file = `/file/pdf/${newFileName}`;
+    }
+
+    // 4. อัปเดตบทความหลัก
+    await prisma.articleDB.update({ where: { id: articleId }, data: updateData });
+
+    // 5. บันทึกประวัติสถานะ (ArticleStatusHistory)
+    if (statusValue) {
+      await prisma.articleStatusHistory.create({
+        data: {
+          articleId: articleId,
+          article_status: statusValue,
+        },
+      });
+    }
+
+    // 6. ถ้ามี comment -> เก็บลง Category.summary (ใช้เป็น note ชั่วคราว)
+    if (comment.trim()) {
+      await prisma.category.create({
+        data: {
+          articleId: articleId,
+          summary: comment.trim(),
+        },
+      });
+    }
+
+    // 7. Refresh path หน้ารายละเอียด (ถ้าผู้ใช้เปิดอยู่) - เผื่อในอนาคตใช้
+    revalidatePath(`/articlevalidation/${articleId}`);
+
+    return { success: true };
+  } catch (error) {
+    console.error('เกิดข้อผิดพลาดในการตรวจสอบบทความ:', error);
+    return { error: 'ไม่สามารถบันทึกผลการตรวจสอบได้' };
+  }
+}

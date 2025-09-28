@@ -1,6 +1,8 @@
-import Image from "next/image";
+// Table row component for teacher article validation list
+import Link from 'next/link';
 
 type Users = {
+  articleId?: number; // ต้องเป็นรหัสบทความจริง
   title: string | undefined;
   athor: string | undefined;
   field: string | undefined;
@@ -9,8 +11,8 @@ type Users = {
   status: string | undefined;
 }
 
-const TeacherArticeTableFeature = ({title, athor, field, offset, url, status}: Users)  => {
-  const statusValidation = (status : any) =>{
+const TeacherArticeTableFeature = ({articleId, title, athor, field, offset, status}: Users)  => {
+  const statusValidation = (status : string | undefined) =>{
     if(status  === 'รอการตรวจสอบ'){
       return  "badge badge-warning";
     }else if(status  === 'รอการยืนยัน'){
@@ -29,10 +31,18 @@ const TeacherArticeTableFeature = ({title, athor, field, offset, url, status}: U
             <div className="flex flex-row justify-center items-center gap-2">
                 <i className ="fa-solid fa-face-smile"></i>
                 <p>{athor} {field} {offset}</p>
-                <p className="badge badge-primary">วารสาร</p>e
+                <p className="badge badge-primary">วารสาร</p>
             </div>
           </div>
-          <button className="btn btn-primary  flex flex-row items-center"><p>ตรวจรายละเอียด</p><i className="fa-solid fa-eye"></i></button>
+          {articleId ? (
+            <Link href={`/articlevalidation/${articleId}`} className="btn btn-primary flex flex-row items-center">
+              <p>ตรวจรายละเอียด</p><i className="fa-solid fa-eye"></i>
+            </Link>
+          ) : (
+            <button type="button" disabled className="btn btn-disabled flex flex-row items-center" title="ไม่มีรหัสบทความ">
+              <p>ตรวจรายละเอียด</p><i className="fa-solid fa-triangle-exclamation"></i>
+            </button>
+          )}
         </div>
     </td>
   );
