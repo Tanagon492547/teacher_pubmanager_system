@@ -1,5 +1,12 @@
-import { NextResponse } from 'next/server';
-import prisma from '../../../lib/prisma'; // <-- แก้ path ไปยัง prisma client ของเราให้ถูกต้องนะ
+import { NextRequest, NextResponse } from 'next/server';
+import prisma from '../../../lib/prisma'; // ใช้ prisma client กลาง
+
+// Type for dynamic where clause (narrow union of allowed filters)
+interface ArticleListWhere {
+  article_status?: string;
+  published_year?: number;
+  OR?: { article_name?: { contains: string; mode: 'insensitive' } ; abstract?: { contains: string; mode: 'insensitive' } }[];
+}
 
 // 1. สร้าง "เมนูอาหาร" (Type) ฉบับใหม่ของเรา!
 //    นี่คือหน้าตาข้อมูลแบบจัดเต็มที่เราต้องการ
@@ -19,41 +26,60 @@ export type DetailedArticleListItem = {
 };
 
 // ฟังก์ชัน GET นี้จะทำงานเมื่อมีการเรียกมาที่ /api/articles-list
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
-    // 2. ให้ Prisma ไปค้นหาข้อมูลบทความทั้งหมด (เหมือนเดิม)
-    const articles = await prisma.articleDB.findMany({
-      include: {
-        contributor: true, // ดึงข้อมูลผู้เขียน (Contributor)
-        user: {            // ดึงข้อมูลเจ้าของบทความ (User)
-          include: {
-            personal: true, // และดึงข้อมูลส่วนตัว (Personal) ของเจ้าของมาด้วย
-          },
-        },
-      },
-      orderBy: {
-        id: 'desc', // เรียงจากบทความล่าสุดก่อน
-      }
-    });
+    // Pagination & filter params
+    const { searchParams } = new URL(req.url);
+    const page = Math.max(1, Number(searchParams.get('page') || '1'));
+    const pageSize = Math.min(100, Math.max(1, Number(searchParams.get('pageSize') || '50'))); // default 50
+    const status = searchParams.get('status');
+    const q = searchParams.get('q'); // free text search (simple LIKE)
+    const year = searchParams.get('year');
 
-    // 3. จัดข้อมูลทั้งหมดให้อยู่ในรูปแบบ "เมนู" ฉบับใหม่ของเรา
-    const formattedArticles: DetailedArticleListItem[] = articles.map(article => {
-      // แยกชื่อ-นามสกุลของผู้เขียน
-      const [firstName, lastName] = article.contributor?.contributor_name.split(' ') ?? ['N/A', ''];
-      
-      // **ส่วนที่แก้ไข!** //
-      // เราจะสร้างตัวแปร personalInfo ขึ้นมา และเช็คก่อนว่ามันมีอยู่จริงหรือไม่
+  const where: ArticleListWhere = {};
+    if (status) where.article_status = status;
+    if (year) where.published_year = Number(year);
+    if (q) {
+      // Simple OR search across a few text columns
+      where.OR = [
+        { article_name: { contains: q, mode: 'insensitive' } },
+        { abstract: { contains: q, mode: 'insensitive' } },
+      ];
+    }
+
+    const [total, articles] = await Promise.all([
+      prisma.articleDB.count({ where }),
+      prisma.articleDB.findMany({
+        where,
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+        orderBy: { id: 'desc' },
+        select: {
+          id: true,
+          article_name: true,
+          published_year: true,
+          articleType: true,
+          article_status: true,
+          article_file: true,
+          abstract: true,
+          contributor: { select: { contributor_name: true, academic_title: true } },
+          user: { select: { personal: { select: { faculty: true, department: true } } } }
+        }
+      })
+    ]);
+
+    type ArticleRow = typeof articles[number];
+    const formattedArticles: DetailedArticleListItem[] = articles.map((article: ArticleRow) => {
+      const [firstName, lastName] = (article.contributor?.contributor_name || 'N/A').split(' ');
       const personalInfo = article.user?.personal;
-
       return {
         articleId: article.id,
         articleName: article.article_name,
         publishedYear: article.published_year,
         articleType: article.articleType,
         academicTitle: article.contributor?.academic_title ?? null,
-        firstName: firstName,
-        lastName: lastName,
-        // ใช้ตัวแปร personalInfo ที่เราเช็คแล้ว เพื่อความปลอดภัย
+        firstName: firstName || 'N/A',
+        lastName: lastName || '',
         faculty: personalInfo?.faculty ?? null,
         department: personalInfo?.department ?? null,
         abstract: article.abstract,
@@ -61,13 +87,17 @@ export async function GET() {
         article_status: article.article_status ?? null,
       };
     });
-    
-    // 4. ส่งข้อมูลที่จัดแล้วกลับไป
-    return NextResponse.json(formattedArticles);
 
+    return NextResponse.json({
+      page,
+      pageSize,
+      total,
+      totalPages: Math.ceil(total / pageSize),
+      items: formattedArticles,
+    });
   } catch (error) {
-    console.error("เกิดข้อผิดพลาดใน API:", error);
-    return NextResponse.json({ error: "เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์" }, { status: 500 });
+    console.error('เกิดข้อผิดพลาดใน API /articles-list:', error);
+    return NextResponse.json({ error: 'เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์' }, { status: 500 });
   }
 }
 

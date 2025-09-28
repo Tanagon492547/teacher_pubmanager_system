@@ -53,6 +53,7 @@ model Contributor {
   articles         ArticleDB[]
 
   
+  @@index([contributor_name])
 }
 
 model ArticleDB {
@@ -72,6 +73,11 @@ model ArticleDB {
   categories     Category[]
 
   
+  @@index([userId])
+  @@index([article_status])
+  @@index([publish_status])
+  @@index([contributorId])
+  @@index([userId, article_status])
 }
 
 model ArticleStatusHistory {
@@ -80,6 +86,8 @@ model ArticleStatusHistory {
   article_status String
   save_history   DateTime  @default(now())
   article        ArticleDB @relation(fields: [articleId], references: [id])
+
+  @@index([articleId])
 }
 
 model ArticleType {
@@ -92,4 +100,6 @@ model Category {
   articleId Int
   summary   String?
   article   ArticleDB @relation(fields: [articleId], references: [id])
+
+  @@index([articleId])
 }
