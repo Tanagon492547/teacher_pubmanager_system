@@ -17,6 +17,30 @@ type DisplayArticle = {
   publishedYear: number | null;
 };
 
+interface ArticlesListAPIItem {
+  articleId: number;
+  articleName: string;
+  publishedYear: number | null;
+  articleType: string | null;
+  academicTitle: string | null;
+  firstName: string;
+  lastName: string;
+  faculty: string | null;
+  department: string | null;
+  abstract: string | null;
+  downloadPath: string | null;
+  article_status: string | null;
+}
+
+interface ArticlesListAPIResponse {
+  page: number;
+  pageSize: number;
+  total: number;
+  totalPages: number;
+  items: ArticlesListAPIItem[];
+  error?: string;
+}
+
 // 2. Component ของเรา **ห้าม** เป็น async นะเหมียว!
 const SearchResult = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -24,47 +48,47 @@ const SearchResult = () => {
   
   // 3. State ของเราจะเก็บข้อมูลที่ "แปลงร่าง" แล้ว (DisplayArticle)
   const [articles, setArticles] = useState<DisplayArticle[]>([]);
+  const [page, setPage] = useState(1);
+  const [pageSize] = useState(20); // client page size
+  const [total, setTotal] = useState(0);
+  const totalPages = Math.ceil(total / pageSize);
 
   useEffect(() => {
+    const controller = new AbortController();
     const fetchAndFormatArticles = async () => {
+      setIsLoading(true);
       try {
-        const response = await fetch(`/api/articles-list`);
-        
+        const response = await fetch(`/api/articles-list?page=${page}&pageSize=${pageSize}`, { signal: controller.signal });
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
         }
-
-        const apiData = await response.json();
-        
-        // 4. **หัวใจของการแก้ไข!** //
-        //    "แปลงร่าง" ข้อมูลที่ได้จาก API ให้กลายเป็นรูปแบบที่ Component ของเราต้องการ
-        const formattedData: DisplayArticle[] = apiData.map((article: any) => ({
+        const apiData: ArticlesListAPIResponse = await response.json();
+        const formattedData: DisplayArticle[] = apiData.items.map((article) => ({
           id: String(article.articleId),
-          title: article.articleName,
-          athor: `${article.firstName} ${article.lastName}`,
-          field: article.academicTitle,
-          offset: article.department,
-          url: article.downloadPath,
-          abstract: article.abstract,
-          articleType: article.articleType,
-          publishedYear: article.published_year,
+            title: article.articleName,
+            athor: `${article.firstName} ${article.lastName}`,
+            field: article.academicTitle,
+            offset: article.department,
+            url: article.downloadPath,
+            abstract: article.abstract,
+            articleType: article.articleType,
+            publishedYear: article.publishedYear,
         }));
-
-        console.log(`ได้รับและแปลงข้อมูลบทความแล้ว: ${formattedData.length} ชิ้น`, formattedData);
-        
         setArticles(formattedData);
-        
-      } catch (err: any) {
+        setTotal(apiData.total);
+      } catch (err) {
+        if (err instanceof DOMException && err.name === 'AbortError') return;
+        const message = err instanceof Error ? err.message : 'Unknown error';
         console.error('เกิดข้อผิดพลาดตอนดึงข้อมูลบทความ:', err);
-        setError(err.message);
+        setError(message);
       } finally {
         setIsLoading(false);
       }
     };
-
     fetchAndFormatArticles();
-  }, []); // <-- ทำงานแค่ครั้งเดียวตอนเริ่มนะ!
+    return () => controller.abort();
+  }, [page, pageSize]);
 
   // --- ส่วนของการแสดงผล (เหมือนเดิม) ---
   if (isLoading) {
@@ -80,7 +104,7 @@ const SearchResult = () => {
       <div className="w-full flex flex-row justify-between items-center mb-5">
         <div className="flex flex-row items-center gap-2">
           <p className="text-4xl">ผลการค้นหา</p>
-          <p className="text-lg">( {articles.length} บทความที่ค้นพบ )</p>
+          <p className="text-lg">( {total} บทความที่ค้นพบ )</p>
         </div>
 
         <form action="" className="w-xs">
@@ -95,8 +119,12 @@ const SearchResult = () => {
       </div>
 
       <div className="w-full">
-        {/* 5. ส่งข้อมูลที่แปลงร่างแล้วไปให้ PaginationFeature */}
         <PaginationFeature pathName="/" mockData={articles} rowsValue={10} />
+      </div>
+      <div className="w-full flex justify-center gap-4 mt-6">
+        <button disabled={page === 1 || isLoading} onClick={() => setPage(p => Math.max(1, p - 1))} className="btn btn-sm" >ก่อนหน้า</button>
+        <span>หน้า {page} / {totalPages || 1}</span>
+        <button disabled={page === totalPages || isLoading} onClick={() => setPage(p => (p < totalPages ? p + 1 : p))} className="btn btn-sm" >ถัดไป</button>
       </div>
     </div>
   );

@@ -1,85 +1,59 @@
 "use client";
 import { usePathname } from 'next/navigation'
 import PaginationFeature from "@/components/PaginationFeature"
+import { useEffect, useState } from 'react';
 
-//จำลองข้อมูล API
-const mockData = [
-  {
-    "id": "tanagon1", "title": "ผลงานตีพิมพ์อาจารย์ PSU สุดโหด", "athor": "ดร.คิดมาก", "field": "ศาสตราจารย์", "offset": "ภาควิชาวิทยาการคอมพิวเตอร์", "url": "https://www.psu.ac.th", "status" : "รอการตรวจสอบ"
-  },
-  {
-    "id": "maiko1", "title": "ผลงานยอดเเย่", "athor": "อ.ปลงเป็น", "field": "ผู้ช่วยศาสตราจารย์", "offset": "ภาควิชาวิทยาการคอมพิวเตอร์", "url": null , "status" : "รอการตรวจสอบ" 
-  },
-  {
-    "id": "kitiko1", "title": "ศาสตราจารย์คนไหนดีย์", "athor": "ดร.จิตดี", "field": "รองศาสตราจารย์", "offset": "ภาควิชาวิทยาการคอมพิวเตอร์", "url": "https://www.psu.ac.th"   , "status" : "รอการยืนยัน"
-  },
-  {
-    "id": "china1", "title": "ภาควิชาวิทยาการคอมพิวเตอร์ดีจริงไหม", "athor": "Dr.สมหวัง", "field": "ผู้ช่วยศาสตราจารย์", "offset": "ภาควิชาวิทยาการคอมพิวเตอร์ดีจริงไหม", "url": null , "status" : "รอการตรวจสอบ"
-  },
-  {
-    "id": "tanagon2", "title": "การวิจัย AI ใน PSU", "athor": "ดร.คิดมาก", "field": "ศาสตราจารย์", "offset": "ภาควิชาวิทยาการคอมพิวเตอร์", "url": "https://www.psu.ac.th" , "status" : "เสร็จสิ้น"
-  },
-  {
-    "id": "maiko2", "title": "ระบบฐานข้อมูลแย่ที่สุด", "athor": "อ.ปลงเป็น", "field": "ผู้ช่วยศาสตราจารย์", "offset": "ภาควิชาวิทยาการคอมพิวเตอร์", "url": null , "status" : "รอการตรวจสอบ"
-  },
-  {
-    "id": "kitiko2", "title": "การสอนโปรแกรมเชิงวิเคราะห์", "athor": "ดร.จิตดี", "field": "รองศาสตราจารย์", "offset": "ภาควิชาวิทยาการคอมพิวเตอร์", "url": "https://www.psu.ac.th", "status" : "รอการตรวจสอบ"
-  },
-  {
-    "id": "china2", "title": "ทำไมภาควิชานี้ดีมาก", "athor": "Dr.สมหวัง", "field": "ผู้ช่วยศาสตราจารย์", "offset": "ภาควิชาวิทยาการคอมพิวเตอร์ดีจริงไหม", "url": null , "status" : "รอการตรวจสอบ"
-  },
-  {
-    "id": "tanagon3", "title": "บทความ Machine Learning", "athor": "ดร.คิดมาก", "field": "ศาสตราจารย์", "offset": "ภาควิชาวิทยาการคอมพิวเตอร์", "url": "https://www.psu.ac.th", "status" : "รอการตรวจสอบ"
-  },
-  {
-    "id": "maiko3", "title": "ปัญหาอาจารย์ใน PSU", "athor": "อ.ปลงเป็น", "field": "ผู้ช่วยศาสตราจารย์", "offset": "ภาควิชาวิทยาการคอมพิวเตอร์", "url": null , "status" : "รอการตรวจสอบ"
-  },
-  {
-    "id": "kitiko3", "title": "วิชาคอมพิวเตอร์ขั้นสูง", "athor": "ดร.จิตดี", "field": "รองศาสตราจารย์", "offset": "ภาควิชาวิทยาการคอมพิวเตอร์", "url": "https://www.psu.ac.th", "status" : "รอการตรวจสอบ"
-  },
-  {
-    "id": "china3", "title": "เทคนิคการสอนดี ๆ", "athor": "Dr.สมหวัง", "field": "ผู้ช่วยศาสตราจารย์", "offset": "ภาควิชาวิทยาการคอมพิวเตอร์ดีจริงไหม", "url": null , "status" : "รอการตรวจสอบ"
-  },
-  {
-    "id": "tanagon4", "title": "โปรเจกต์ PSU ที่น่าทึ่ง", "athor": "ดร.คิดมาก", "field": "ศาสตราจารย์", "offset": "ภาควิชาวิทยาการคอมพิวเตอร์", "url": "https://www.psu.ac.th", "status" : "รอการตรวจสอบ"
-  },
-  {
-    "id": "maiko4", "title": "ข้อผิดพลาดของการเรียน", "athor": "อ.ปลงเป็น", "field": "ผู้ช่วยศาสตราจารย์", "offset": "ภาควิชาวิทยาการคอมพิวเตอร์", "url": "https://www.psu.ac.th", "status" : "รอการตรวจสอบ"
-  },
-  {
-    "id": "kitiko4", "title": "การประเมินผลงานอาจารย์", "athor": "ดร.จิตดี", "field": "รองศาสตราจารย์", "offset": "ภาควิชาวิทยาการคอมพิวเตอร์", "url": "https://www.psu.ac.th", "status" : "รอการตรวจสอบ"
-  },
-  {
-    "id": "china4", "title": "คำแนะนำสำหรับนักศึกษา", "athor": "Dr.สมหวัง", "field": "ผู้ช่วยศาสตราจารย์", "offset": "ภาควิชาวิทยาการคอมพิวเตอร์ดีจริงไหม", "url": null , "status" : "รอการตรวจสอบ"
-  },
-  {
-    "id": "tanagon5", "title": "แนวทางวิจัยใหม่", "athor": "ดร.คิดมาก", "field": "ศาสตราจารย์", "offset": "ภาควิชาวิทยาการคอมพิวเตอร์", "url": "https://www.psu.ac.th", "status" : "รอการตรวจสอบ"
-  },
-  {
-    "id": "maiko5", "title": "การเรียนออนไลน์แย่มาก", "athor": "อ.ปลงเป็น", "field": "ผู้ช่วยศาสตราจารย์", "offset": "ภาควิชาวิทยาการคอมพิวเตอร์", "url": "https://www.psu.ac.th", "status" : "รอการตรวจสอบ"
-  },
-  {
-    "id": "kitiko5", "title": "เทคนิคการสอบ", "athor": "ดร.จิตดี", "field": "รองศาสตราจารย์", "offset": "ภาควิชาวิทยาการคอมพิวเตอร์", "url": "https://www.psu.ac.th", "status" : "รอการตรวจสอบ"
-  },
-  {
-    "id": "china5", "title": "การพัฒนาภาควิชา", "athor": "Dr.สมหวัง", "field": "ผู้ช่วยศาสตราจารย์", "offset": "ภาควิชาวิทยาการคอมพิวเตอร์ดีจริงไหม", "url": null , "status" : "รอการตรวจสอบ"
-  },
-  {
-    "id": "tanagon6", "title": "การเขียนบทความวิชาการ", "athor": "ดร.คิดมาก", "field": "ศาสตราจารย์", "offset": "ภาควิชาวิทยาการคอมพิวเตอร์", "url": "https://www.psu.ac.th", "status" : "รอการตรวจสอบ"
-  },
-  {
-    "id": "maiko6", "title": "ข้อเสนอแนะ PSU", "athor": "อ.ปลงเป็น", "field": "ผู้ช่วยศาสตราจารย์", "offset": "ภาควิชาวิทยาการคอมพิวเตอร์", "url": "https://www.psu.ac.th", "status" : "รอการตรวจสอบ"
-  },
-  {
-    "id": "kitiko6", "title": "เทคโนโลยีใหม่สำหรับการเรียน", "athor": "ดร.จิตดี", "field": "รองศาสตราจารย์", "offset": "ภาควิชาวิทยาการคอมพิวเตอร์", "url": "https://www.psu.ac.th", "status" : "รอการตรวจสอบ"
-  },
-  {
-    "id": "china6", "title": "ประสบการณ์การเรียนดี", "athor": "Dr.สมหวัง", "field": "ผู้ช่วยศาสตราจารย์", "offset": "ภาควิชาวิทยาการคอมพิวเตอร์ดีจริงไหม", "url": null , "status" : "รอการตรวจสอบ"
-  }
-];
+type ArticleListItem = {
+  articleId: number;
+  articleName: string;
+  publishedYear: number | null;
+  articleType: string | null;
+  academicTitle: string | null;
+  firstName: string;
+  lastName: string;
+  faculty: string | null;
+  department: string | null;
+  abstract: string | null;
+  downloadPath: string | null;
+  article_status: string | null;
+}
 
-const ArticlemanagementPage = () => {
+const ArticleValidationPage = () => {
   const pathName = usePathname();
+  const [data, setData] = useState<ArticleListItem[] | null>(null);
+  // (สามารถเพิ่ม pagination UI ภายหลังได้)
+  const page = 1;
+  const pageSize = 50;
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let ignore = false;
+    async function load() {
+      try {
+        setLoading(true);
+        const res = await fetch(`/api/articles-list?page=${page}&pageSize=${pageSize}`);
+        if (!res.ok) throw new Error('โหลดข้อมูลล้มเหลว');
+        const json = await res.json();
+        // รองรับทั้งโครงสร้างเก่า (array) และใหม่ ({items:[]})
+        const items: ArticleListItem[] = Array.isArray(json) ? json : json.items || [];
+        if (!ignore) {
+          setData(items);
+          if (!Array.isArray(json)) {
+            // setTotal(json.total || items.length); // Removed unused state
+            // setPageSize(json.pageSize || pageSize); // Removed unused state
+          }
+        }
+      } catch (e: unknown) {
+        const message = e instanceof Error ? e.message : 'เกิดข้อผิดพลาด';
+        if (!ignore) setError(message);
+      } finally {
+        if (!ignore) setLoading(false);
+      }
+    }
+    load();
+    return () => { ignore = true; };
+  }, [page, pageSize]);
 
   return (
     <div className="w-full flex flex-col justify-center items-center px-4 py-10">
@@ -90,36 +64,55 @@ const ArticlemanagementPage = () => {
         </div>
 
         <div className="w-full flex flex-row items-center gap-2 mb-9 border-2 border-(--color-border)/20 rounded-2xl p-2">
-          <label htmlFor="">สถานะ : </label>
-          <select defaultValue="เรียงตามผลงานล่าสุด" className="select">
-            <option disabled={true}>เรียงตามผลงานล่าสุด</option>
-            <option>เรียงตามผลงานล่าสุด</option>
-            <option>Amber</option>
-            <option>Velvet</option>
+          <label>สถานะ : </label>
+          <select defaultValue="ทั้งหมด" className="select">
+            <option disabled>ทั้งหมด</option>
+            <option>ทั้งหมด</option>
+            <option>รอการตรวจสอบ</option>
+            <option>รอการยืนยัน</option>
+            <option>เสร็จสิ้น</option>
           </select>
 
-          <label htmlFor="">ประเภท : </label>
-          <select defaultValue="เรียงตามผลงานล่าสุด" className="select">
-            <option disabled={true}>เรียงตามผลงานล่าสุด</option>
-            <option>เรียงตามผลงานล่าสุด</option>
-            <option>Amber</option>
-            <option>Velvet</option>
-          </select>
+          <label>ประเภท : </label>
+            <select defaultValue="ทั้งหมด" className="select">
+              <option disabled>ทั้งหมด</option>
+              <option>บทความ</option>
+              <option>งานวิจัย</option>
+            </select>
 
-          <label htmlFor="">ปี : </label>
-          <select defaultValue="2025" className="select">
-            <option disabled={true}>2025</option>
-            <option>เรียงตามผลงานล่าสุด</option>
-            <option>Amber</option>
-            <option>Velvet</option>
+          <label>ปี : </label>
+          <select defaultValue="ทั้งหมด" className="select">
+            <option disabled>ทั้งหมด</option>
+            <option>2025</option>
+            <option>2024</option>
           </select>
         </div>
 
-        <PaginationFeature pathName={pathName} mockData={mockData} rowsValue={11} />
-
+        {loading && <div className="w-full flex justify-center py-20"><span className="loading loading-spinner loading-lg" /> กำลังโหลด...</div>}
+        {error && !loading && <div className="alert alert-error w-full">{error}</div>}
+        {data && !loading && data.length > 0 && (() => {
+          // แปลงข้อมูลจาก API ให้เข้ากับโครงสร้างที่ Table ใช้
+          const statusMap: Record<string, string> = {
+            draft: 'รอการตรวจสอบ',
+            submitted: 'รอการยืนยัน',
+            pending: 'รอการตรวจสอบ',
+            approved: 'เสร็จสิ้น',
+          };
+          const mapped = data.map(item => ({
+            articleId: item.articleId,
+            title: item.articleName,
+            athor: `${item.academicTitle || ''} ${item.firstName} ${item.lastName}`.trim(),
+            field: item.academicTitle || '',
+            offset: item.department || item.faculty || '',
+            url: item.downloadPath,
+            status: statusMap[item.article_status || 'draft'] || item.article_status || 'รอการตรวจสอบ',
+          }));
+          return <PaginationFeature pathName={pathName} mockData={mapped} rowsValue={11} />;
+        })()}
+        {!loading && (data == null || data.length === 0) && <div className="w-full text-center py-10 text-gray-500">ไม่มีข้อมูลบทความ</div>}
       </div>
     </div>
   );
 };
 
-export default ArticlemanagementPage;
+export default ArticleValidationPage;

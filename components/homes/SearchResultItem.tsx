@@ -1,5 +1,4 @@
 import Image from "next/image";
-import Link from "next/link";
 import DownloadCard from "../DownloadCard";
 import { useRouter } from "next/navigation";
 
@@ -36,8 +35,12 @@ const SearchResultItem = ({id, title, athor, field, offset, url, abstract, artic
                   </p>
                   <div className="flex flex-row gap-2 ">
                     <DownloadCard url={url} />
-                    <button onClick={()=>router.replace(`/article-detail-page/${id}`)}>
-                      <button className="btn btn-outline btn-sm text-lg rounded-sm px-10 py-5"><p className="text-black/60">ดูรายละเอียด</p></button>
+                    <button
+                      type="button"
+                      onClick={() => router.replace(`/article-detail-page/${id}`)}
+                      className="btn btn-outline btn-sm text-lg rounded-sm px-10 py-5"
+                    >
+                      <p className="text-black/60">ดูรายละเอียด</p>
                     </button>
                   </div>
                 </div>
