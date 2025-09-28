@@ -121,11 +121,6 @@ const SearchResult = () => {
       <div className="w-full">
         <PaginationFeature pathName="/" mockData={articles} rowsValue={10} />
       </div>
-      <div className="w-full flex justify-center gap-4 mt-6">
-        <button disabled={page === 1 || isLoading} onClick={() => setPage(p => Math.max(1, p - 1))} className="btn btn-sm" >ก่อนหน้า</button>
-        <span>หน้า {page} / {totalPages || 1}</span>
-        <button disabled={page === totalPages || isLoading} onClick={() => setPage(p => (p < totalPages ? p + 1 : p))} className="btn btn-sm" >ถัดไป</button>
-      </div>
     </div>
   );
 }

@@ -11,7 +11,7 @@ type props = {
 const Navbar = ({userType, user_id}:props) => {
   const pathname = usePathname()
   return (
-    <div className="w-full h-16  flex flex-col justify-center items-center px-4 py-10">
+    <div className="w-full h-16  flex flex-col justify-center items-center px-4 py-10 bg-white">
       <div className="w-full max-w-(--8xl) flex flex-col">
         <div role="tablist" className="tabs tabs-border">
           <Link href='/' role="tab" id='tab-navbarmanu' className={`tab  p-0   ${ pathname === '/' ? 'tab-active' : ''} `}>หน้าหลัก</Link>

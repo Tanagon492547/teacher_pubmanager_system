@@ -1,15 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '../../../lib/prisma'; // ใช้ prisma client กลาง
 
-// Type for dynamic where clause (narrow union of allowed filters)
+// Type for dynamic where clause
 interface ArticleListWhere {
-  article_status?: string;
+  article_status: string; // <-- ทำให้ status เป็น field ที่ต้องมีเสมอ
   published_year?: number;
   OR?: { article_name?: { contains: string; mode: 'insensitive' } ; abstract?: { contains: string; mode: 'insensitive' } }[];
 }
 
-// 1. สร้าง "เมนูอาหาร" (Type) ฉบับใหม่ของเรา!
-//    นี่คือหน้าตาข้อมูลแบบจัดเต็มที่เราต้องการ
+// ... (Type DetailedArticleListItem เหมือนเดิม) ...
 export type DetailedArticleListItem = {
   articleId: number;
   articleName: string;
@@ -22,31 +21,37 @@ export type DetailedArticleListItem = {
   department: string | null;
   abstract: string | null;
   downloadPath: string | null;
-  article_status: string | null; // current workflow status
+  article_status: string | null;
 };
 
-// ฟังก์ชัน GET นี้จะทำงานเมื่อมีการเรียกมาที่ /api/articles-list
+
 export async function GET(req: NextRequest) {
   try {
-    // Pagination & filter params
     const { searchParams } = new URL(req.url);
     const page = Math.max(1, Number(searchParams.get('page') || '1'));
-    const pageSize = Math.min(100, Math.max(1, Number(searchParams.get('pageSize') || '50'))); // default 50
-    const status = searchParams.get('status');
-    const q = searchParams.get('q'); // free text search (simple LIKE)
+    const pageSize = Math.min(100, Math.max(1, Number(searchParams.get('pageSize') || '50')));
+    const q = searchParams.get('q');
     const year = searchParams.get('year');
 
-  const where: ArticleListWhere = {};
-    if (status) where.article_status = status;
+    // **หัวใจของการแก้ไขอยู่ตรงนี้!** //
+    // 1. เราตั้ง "กฎเหล็ก" ไว้เลยว่าต้องหาเฉพาะบทความที่มีสถานะเป็น 'approved' เท่านั้น!
+    const where: ArticleListWhere = {
+      article_status: 'approved',
+    };
+
+    // 2. เราจะลบการเช็ค status จาก URL ออกไปเลย เพราะเราไม่ต้องการให้ใครมาเปลี่ยนกฎนี้ได้
+    //    if (status) where.article_status = status; <-- ลบบรรทัดนี้ทิ้งไปเลย!
+
+    // ส่วนการกรองอื่นๆ ยังทำงานได้เหมือนเดิมนะ
     if (year) where.published_year = Number(year);
     if (q) {
-      // Simple OR search across a few text columns
       where.OR = [
         { article_name: { contains: q, mode: 'insensitive' } },
         { abstract: { contains: q, mode: 'insensitive' } },
       ];
     }
 
+    // --- ส่วนที่เหลือของโค้ดทำงานเหมือนเดิมเป๊ะๆ เลยจ้ะ ---
     const [total, articles] = await Promise.all([
       prisma.articleDB.count({ where }),
       prisma.articleDB.findMany({
