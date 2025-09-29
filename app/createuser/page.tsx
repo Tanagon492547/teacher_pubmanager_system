@@ -2,25 +2,28 @@
 import React, { useState } from "react";
 import { useRouter } from 'next/navigation'
 import { useForm } from "react-hook-form";
+import { AnimatePresence } from "framer-motion"; // <--- เพิ่มการ import AnimatePresence
+import Notification from "@/components/Notification";
 
 type UserForm = {
-title: string;
-firstName: string;
-lastName: string;
-gender: string;
-position: string;
-faculty: string;
-department: string;
-email: string;
-username: string;
-password: string;
-role: string;
- age?: number;
+  title: string;
+  firstName: string;
+  lastName: string;
+  gender: string;
+  position: string;
+  faculty: string;
+  department: string;
+  email: string;
+  username: string;
+  password: string;
+  role: string;
+  age?: number;
 };
 
 const UserManagement: React.FC = () => {
   const { register, handleSubmit, formState: { errors } } = useForm<UserForm>();
   const [preview, setPreview] = useState<string | null>(null);
+  const [notification, setNotification] = useState<{ title: string, status: string, error:boolean } | null>(null); // <--- เพิ่ม state สำหรับแจ้งเตือน
 
   const router = useRouter()
   const [loading, setLoading] = React.useState(false)
@@ -42,11 +45,22 @@ const UserManagement: React.FC = () => {
         body: JSON.stringify(payload)
       })
       const json = await res.json()
-  if (!res.ok) throw new Error(json?.error || 'Failed to create user')
-  alert('บันทึกข้อมูลสำเร็จ')
-  router.push('/usermanagement')
+      if (!res.ok) throw new Error(json?.error || 'Failed to create user')
+      
+      // <--- แทนที่ alert ด้วยการตั้งค่า state ของ Notification
+      setNotification({ title: 'บันทึกข้อมูลสำเร็จ', status: 'การบันทึกข้อมูลผู้ใช้ใหม่สำเร็จแล้วค่ะ' , error:false  });
+      
+      setTimeout(() => {
+        setNotification(null);
+        router.push('/usermanagement')
+      }, 5000); // แสดงแจ้งเตือน 3 วินาทีแล้วนำไปหน้าอื่น
     } catch (err: any) {
-      alert(err.message || 'เกิดข้อผิดพลาด')
+      // <--- แทนที่ alert ด้วยการตั้งค่า state ของ Notification
+      setNotification({ title: 'เกิดข้อผิดพลาด', status: err.message || 'ไม่สามารถบันทึกข้อมูลได้', error:true  });
+      
+      setTimeout(() => {
+        setNotification(null);
+      }, 3000);
     } finally {
       setLoading(false)
     }
@@ -200,9 +214,12 @@ const UserManagement: React.FC = () => {
           </form>
         </div>
       </div>
+
+      <AnimatePresence>
+        {notification && <Notification title={notification.title} status={notification.status} />}
+      </AnimatePresence>
     </div>
   );
 };
 
 export default UserManagement;
-
