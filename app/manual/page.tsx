@@ -1,53 +1,16 @@
-// app/manual/page.tsx
-"use client";
+import ManualDownloader from "@/components/manual/ManualDownloader";
+import { getCurrentUserType } from "@/lib/data/users";
 
-export default function ManualPage() {
-  const handleClick = () => {
-    alert("กดโหลดทำมายยย");
-  };
+// Page นี้เป็น "พ่อครัว" (Server Component)
+export default async function ManualPage() {
+  
+  // 1. ให้ "พ่อครัว" ไปหาประเภทของผู้ใช้ที่ Login อยู่มา
+  const userType = await getCurrentUserType();
 
   return (
-    <main
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        background: "#f6f6f6",
-        padding: "2rem",
-      }}
-    >
-      <div
-        style={{
-          width: "min(100%, 600px)",
-          background: "#dddddd",
-          borderRadius: 18,
-          padding: "3rem 2rem",
-          textAlign: "center",
-        }}
-      >
-        <h1 style={{ fontSize: 24, fontWeight: 600, marginBottom: 20 }}>
-          คู่มือการใช้งานระบบ
-        </h1>
-        <p style={{ marginBottom: "1.5rem" }}>ลิงก์</p>
-
-        {/* ปุ่มดาวน์โหลด */}
-        <button
-          onClick={handleClick}
-          style={{
-            background: "#2563eb",
-            color: "#fff",
-            padding: "12px 24px",
-            border: "none",
-            borderRadius: "8px",
-            fontSize: "1rem",
-            fontWeight: "bold",
-            cursor: "pointer",
-          }}
-        >
-          ดาวน์โหลด
-        </button>
-      </div>
-    </main>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+      {/* 2. ส่งประเภทผู้ใช้ที่ได้ ไปให้ "พนักงานเสิร์ฟ" ของเรา */}
+      <ManualDownloader userType={userType} />
+    </div>
   );
 }

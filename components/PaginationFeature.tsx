@@ -6,6 +6,8 @@ import HistiryTableFeature from "./myhistorys/HistiryTableFeature";
 import TeacherArticeTableFeature from "./articlevalidations/TeacherArticeTableFeature";
 import ManagementTableFeature from "./usermanagements/ManagementTableFeature";
 import Loading from "@/app/loading";
+import { usePathname } from "next/navigation";
+import { motion } from "framer-motion";
 
 type data = {
   mockData: object,
@@ -13,19 +15,20 @@ type data = {
   rowsValue: number,
 }
 
-const paginationFeature = ({ mockData, pathName, rowsValue }: data) => {
+const PaginationFeature = ({ mockData, pathName, rowsValue }: data) => {
   const [tablePage, setTablePage] = useState(1); // หน้าเริ่มต้นของตาราง
   const [rowsPerPage, setRowsPerPage] = useState(10); // จำนวนเเถวต่อหน้า 
   const arrData = Object.values(mockData); // แปลง object เป็น array ของ values
   const varlueResult = arrData.slice((tablePage - 1) * rowsPerPage, tablePage * rowsPerPage);
-
+  const pathname = usePathname();
 
   useEffect(() => {
     setRowsPerPage(rowsValue)
-  })
+  }, [rowsValue])
 
-  const tableBorder = (pathName: any) => {
-    if (pathName !== '/' && pathName !== '/articlevalidation' && pathName !== '/usermanagement') {
+  const tableBorder = (pathName: string | undefined) => {
+    const isArticleManagement = pathname.startsWith('/articlemanagement');
+    if (pathName !== '/' && !isArticleManagement && pathName !== '/usermanagement') {
       return 'overflow-x-auto  border-2 border-(--color-primary)/50 rounded-xl';
     } else {
       return '';
@@ -37,7 +40,7 @@ const paginationFeature = ({ mockData, pathName, rowsValue }: data) => {
     <div className="w-full min-h-screen">
       <Suspense fallback={<Loading />}>
         <div className={`${tableBorder(pathName)} w-full min-h-screen`}>
-          {pathName === '/articlemanagement' && (
+          {pathname.startsWith('/articlemanagement') && (
             <table className="table">
               <thead>
                 <tr>
@@ -53,7 +56,7 @@ const paginationFeature = ({ mockData, pathName, rowsValue }: data) => {
               </thead>
               <tbody >
                 {varlueResult.map((value, index) => {
-                  return <TableFeature key={index} index={index + 1} title={value.หัวข้อ} uploadDate={value.วันที่อัปโหลด} publishYear={value.ปีที่พิมพ์} type={value.ประเภท} status={value.สถานะ} pathName={pathName} />
+                  return <TableFeature key={index} articleId={value.articleId} index={index + 1} title={value.article_name} uploadDate={value.uploadDate} publishYear={value.published_year} type={value.articleType} status={value.article_status} pathName={pathName} />
                 })}
               </tbody>
             </table>
@@ -82,13 +85,34 @@ const paginationFeature = ({ mockData, pathName, rowsValue }: data) => {
           )}
 
           {pathName === '/' && (
-            <table className=" w-full">
+            <table className="w-full">
               <tbody className="w-full">
-                {/* slice เเบ่งหน้า */}
-                {varlueResult.map((value, key) => (
-                  <tr key={key} className="w-full">
-                    <SearchResultItem id={value.id} title={value.title} athor={value.athor} field={value.field} offset={value.offset} url={value.url} />
-                  </tr>
+                {varlueResult.map((value, index) => ( // <-- เปลี่ยน key เป็น index เพื่อใช้หน่วงเวลา
+                  // 1. เปลี่ยน <tr> ธรรมดา ให้เป็น motion.tr
+                  <motion.tr
+                    key={value.id || index} // <-- ใช้ id ที่ไม่ซ้ำกันจะดีที่สุดนะ
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }} // 2. ใช้ whileInView เพื่อให้ทำงานตอน scroll มาเจอ
+                    viewport={{ once: true }} // 3. ตั้งค่าให้ animation ทำงานแค่ครั้งเดียว
+                    transition={{
+                      duration: 0.5,
+                      delay: index * 0.05 // 4. (เทคนิคพิเศษ!) หน่วงเวลาแต่ละแถวเล็กน้อย
+                    }}
+                    className="w-full  "
+                  >
+                    {/* 5. SearchResultItem ต้อง return <td>...</td> ออกมานะ */}
+                    <SearchResultItem
+                      id={value.id}
+                      title={value.title}
+                      athor={value.athor}
+                      field={value.field}
+                      offset={value.offset}
+                      url={value.url}
+                      abstract={value.abstract}
+                      articleType={value.articleType}
+                      publishedYear={value.publishedYear}
+                    />
+                  </motion.tr>
                 ))}
               </tbody>
             </table>
@@ -98,9 +122,9 @@ const paginationFeature = ({ mockData, pathName, rowsValue }: data) => {
             <table className=" w-full">
               <tbody className="w-full">
                 {/* slice เเบ่งหน้า */}
-                {varlueResult.map((value, key) => (
-                  <tr key={key} className="w-full">
-                    <TeacherArticeTableFeature title={value.title} athor={value.athor} field={value.field} offset={value.offset} url={value.url} status={value.status} />
+                {varlueResult.map((value: { articleId?: number; id?: number; title?: string; article_name?: string; athor?: string; field?: string; offset?: string; url?: string; status?: string; article_status?: string }, key) => (
+                  <tr key={value.articleId || value.id || key} className="w-full">
+                    <TeacherArticeTableFeature articleId={value.articleId || value.id} title={value.title || value.article_name} athor={value.athor} field={value.field} offset={value.offset} url={value.url} status={value.status || value.article_status} />
                   </tr>
                 ))}
               </tbody>
@@ -127,7 +151,7 @@ const paginationFeature = ({ mockData, pathName, rowsValue }: data) => {
                   {/* slice เเบ่งหน้า */}
                   {varlueResult.map((value, key) => (
 
-                    <ManagementTableFeature key={key} name={value.ชื่ออาจารย์} email={value.อีเมล์} type={value.ประเภท} description={value.รายละเอียด} loginDate={value.เข้าสู่ระบบล่าสุด} />
+                    <ManagementTableFeature key={value.userId ?? key} id={value.userId ?? key} name={value.name} email={'ยังไม่มีตัวเเปรอีเมล์'} type={value.type} description={value.detail} loginDate={'ยังไม่มีตัวเเปรเข้าใช้'} />
 
                   ))}
                 </tbody>
@@ -153,5 +177,5 @@ const paginationFeature = ({ mockData, pathName, rowsValue }: data) => {
   );
 }
 
-export default paginationFeature;
+export default PaginationFeature;
 
