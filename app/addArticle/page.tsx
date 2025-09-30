@@ -6,15 +6,19 @@ import { addArticle } from '@/hooks/posts/actions';
 import { useRouter } from 'next/navigation';
 import { cookies } from 'next/headers';
 import { PrismaClient } from '@prisma/client';
-import AddArticleFeature from '@/components/addArticle/AddArticleFeature';
+import AddArticleFeature from '@/components/addArticle/addArticlefeature';
+
+
 
 
 
 const ArticleForm  =  () => {
 
   return (
+    
     <AddArticleFeature  />
   )
 };
 
 export default ArticleForm;
+
