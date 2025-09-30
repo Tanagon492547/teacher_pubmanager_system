@@ -2,8 +2,8 @@ import { motion, Variants } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 
 type alerts = {
-  title?: string;
-  status?: string;
+  title?: string; 
+  status?: string; 
   action_text?: string;
   error? : boolean,
 };

@@ -1,13 +1,11 @@
-import { PrismaClient } from '@prisma/client';
 import { NextResponse } from 'next/server';
-
-const prisma = new PrismaClient();
+import prisma from '../../../lib/prisma'; // <-- ส่วนที่ปรับปรุง: ใช้ prisma client กลางดีที่สุดนะ!
 
 // สร้าง Type สำหรับข้อมูลที่เราต้องการจะแสดงผล
 export type FormattedUser = {
   userId: number;
   name: string;
-  // email: string | null;
+  email: string | null; // <-- พี่ข้าวเปิดให้ใช้ email ด้วยนะ
   type: string;
   detail: string;
   // ensure login_check_date is always present (string). Empty string when unknown.
@@ -48,7 +46,7 @@ export async function getAllUsers(): Promise<FormattedUser[]> {
     });
 
     return formattedUsers;
-
+    
   } catch (error) {
     console.error("Failed to fetch users:", error);
     return [];
