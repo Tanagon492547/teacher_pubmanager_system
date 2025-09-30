@@ -8,7 +8,8 @@ export type FormattedUser = {
   email: string | null; // <-- พี่ข้าวเปิดให้ใช้ email ด้วยนะ
   type: string;
   detail: string;
-  login_check_date? : string
+  // ensure login_check_date is always present (string). Empty string when unknown.
+  login_check_date: string;
 };
 
 // ย้ายฟังก์ชัน getAllUsers มาไว้ในไฟล์นี้เลย
@@ -22,6 +23,7 @@ export async function getAllUsers(): Promise<FormattedUser[]> {
             user_type: true,
           },
         },
+        // include login so we can expose the last-login timestamp
         login: true,
       },
     });
@@ -29,20 +31,22 @@ export async function getAllUsers(): Promise<FormattedUser[]> {
     // 2. จัดรูปแบบข้อมูล (map) ให้อยู่ในรูปแบบที่เราต้องการ
     const formattedUsers = users.map(user => {
       const personalInfo = user.personal;
+      const loginInfo = (user as any).login;
 
       return {
         userId: user.id,
         name: personalInfo?.user_name || 'N/A',
-        email: personalInfo?.email || null,
-        // **ส่วนที่แก้ไข!** //
-        // เปลี่ยนจาก user_Type (T ใหญ่) ให้เป็น user_type (t เล็ก) นะเหมียว!
-        type: personalInfo?.user_type?.user_typename || 'N/A',
+        // email: personalInfo?.email || "null",
+  type: personalInfo?.user_type?.user_typename || 'N/A',
         detail: `Username: ${user.username}, Title: ${personalInfo?.user_fame || '-'}`,
+  // map login_check_date to an ISO string; always return a string (empty if unknown)
+  login_check_date: loginInfo?.login_check_date ? loginInfo.login_check_date.toISOString() : '',
+        // login_check_date ถูกลบออกไปแล้ว
       };
     });
 
     return formattedUsers;
-
+    
   } catch (error) {
     console.error("Failed to fetch users:", error);
     return [];

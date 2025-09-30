@@ -56,7 +56,11 @@ const PaginationFeature = ({ mockData, pathName, rowsValue }: data) => {
               </thead>
               <tbody >
                 {varlueResult.map((value, index) => {
-                  return <TableFeature key={index} articleId={value.articleId} index={index + 1} title={value.article_name} uploadDate={value.uploadDate} publishYear={value.published_year} type={value.articleType} status={value.article_status} pathName={pathName} />
+                  // prefer full contributor_name if provided by API, otherwise fallback to assembled name
+                  const owner = (value as any).contributor_name && (value as any).contributor_name.trim() !== ''
+                    ? (value as any).contributor_name
+                    : `${(value as any).academicTitle || ''} ${(value as any).firstName || ''} ${(value as any).lastName || ''}`.trim();
+                  return <TableFeature key={index} articleId={value.articleId} index={index + 1} title={value.article_name} uploadDate={value.uploadDate} publishYear={value.published_year} type={value.articleType} status={value.article_status} pathName={pathName} athor={owner || 'ไม่ระบุ'} />
                 })}
               </tbody>
             </table>
@@ -149,7 +153,7 @@ const PaginationFeature = ({ mockData, pathName, rowsValue }: data) => {
 
                 <tbody className="w-full">
                   {/* slice เเบ่งหน้า */}
-                  {varlueResult.map((value, key) => (
+                  {varlueResult.map((value: any, key) => (
 
                     <ManagementTableFeature 
                     key={value.userId ?? key} 

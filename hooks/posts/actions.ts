@@ -1,7 +1,7 @@
 'use server';
 
 import prisma from '@/lib/prisma';
-import { mkdir, writeFile, stat } from 'fs/promises';
+import { mkdir, writeFile, stat, unlink } from 'fs/promises';
 import { revalidatePath } from 'next/cache';
 import { notFound, redirect } from 'next/navigation';
 import path from 'path';
@@ -141,6 +141,7 @@ export async function addArticle(formData: FormData): Promise<{ error?: string }
       data: {
         article_name: articleName,
         published_year: publishedDate.getFullYear(),
+        published_date: publishedDate,
         abstract: abstract,
         publish_status: rights,
         article_status: 'pending',
@@ -151,6 +152,19 @@ export async function addArticle(formData: FormData): Promise<{ error?: string }
     });
     newArticleId = newArticle.id;
     console.log(`สร้างบทความในฐานข้อมูลสำเร็จ! ได้ ID: ${newArticleId}`);
+
+    // --- บันทึกประวัติสถานะเริ่มต้น (save_history) เพื่อเก็บเวลาที่สร้างบทความ ---
+    try {
+      await prisma.articleStatusHistory.create({
+        data: {
+          articleId: newArticleId,
+          article_status: 'pending',
+        },
+      });
+      console.log(`บันทึกประวัติสถานะเริ่มต้นสำหรับบทความ ID: ${newArticleId}`);
+    } catch (e) {
+      console.warn('ไม่สามารถบันทึกประวัติสถานะเริ่มต้น:', e);
+    }
 
     // --- จัดการไฟล์โดยใช้ ID ที่ได้มา (เหมือนเดิม) ---
     let dbFilePath: string | undefined = undefined;
@@ -165,6 +179,13 @@ export async function addArticle(formData: FormData): Promise<{ error?: string }
         data: { article_file: dbFilePath },
       });
       console.log(`อัปเดต path ของไฟล์ในฐานข้อมูลสำเร็จ`);
+    }
+
+    // --- บันทึกผู้ร่วมเขียน (CoAuthor) ถ้ามี ---
+    if (newArticleId && Array.isArray(coAuthors) && coAuthors.length > 0) {
+      const createData = coAuthors.map(c => ({ articleId: newArticleId!, academic_title: c.academic_title || null, firstname: c.firstname, lastname: c.lastname }));
+      await prisma.coAuthor.createMany({ data: createData });
+      console.log(`บันทึกผู้ร่วมเขียน (${createData.length}) สำหรับบทความ ID: ${newArticleId}`);
     }
 
   } catch (error) {
@@ -227,6 +248,7 @@ export async function updateArticle(articleId: number, formData: FormData): Prom
       data: {
         article_name: articleName,
         published_year: publishedDate.getFullYear(),
+        published_date: publishedDate,
         abstract: abstract,
         publish_status: rights,
         article_status: 'pending',
@@ -236,6 +258,25 @@ export async function updateArticle(articleId: number, formData: FormData): Prom
         ...(dbFilePath && { article_file: dbFilePath }),
       },
     });
+    // --- บันทึกประวัติสถานะหลังการแก้ไข เพื่อเก็บเวลาที่แก้ไขล่าสุด ---
+    try {
+      await prisma.articleStatusHistory.create({
+        data: {
+          articleId: articleId,
+          article_status: 'pending',
+        },
+      });
+      console.log(`บันทึกประวัติสถานะหลังการแก้ไขสำหรับบทความ ID: ${articleId}`);
+    } catch (e) {
+      console.warn('ไม่สามารถบันทึกประวัติสถานะหลังการแก้ไข:', e);
+    }
+    // --- อัปเดตผู้ร่วมเขียน: ลบของเดิมแล้วสร้างใหม่ (ง่ายแต่ปลอดภัย)
+    await prisma.coAuthor.deleteMany({ where: { articleId: articleId } });
+    if (Array.isArray(coAuthors) && coAuthors.length > 0) {
+      const createData = coAuthors.map(c => ({ articleId: articleId, academic_title: c.academic_title || null, firstname: c.firstname, lastname: c.lastname }));
+      await prisma.coAuthor.createMany({ data: createData });
+      console.log(`อัปเดตผู้ร่วมเขียน (${createData.length}) สำหรับบทความ ID: ${articleId}`);
+    }
     console.log(`อัปเดตข้อมูลบทความ ID: ${articleId} สำเร็จ`);
 
   } catch (error) {
@@ -259,6 +300,29 @@ export async function getDeleteForm(id: number) {
     await prisma.category.deleteMany({
       where: { articleId: id },
     });
+    // Delete co-authors (children) to prevent foreign key constraint errors
+    await prisma.coAuthor.deleteMany({
+      where: { articleId: id },
+    });
+
+    // Optionally, if there's an uploaded file on disk, try to remove it silently
+    try {
+      const articleRecord = await prisma.articleDB.findUnique({ where: { id } });
+      if (articleRecord && articleRecord.article_file) {
+        // article_file is stored like '/file/pdf/123.pdf' -> map to public path
+        const filePath = path.join(process.cwd(), 'public', articleRecord.article_file.replace(/^\//, ''));
+        try {
+          await stat(filePath);
+          await unlink(filePath);
+          console.log(`Deleted article file from disk: ${filePath}`);
+        } catch (e) {
+          // ignore file not found or permission errors
+          console.log(`No local file to delete or cannot delete: ${filePath}`, (e as any)?.message || e);
+        }
+      }
+    } catch (e) {
+      console.warn('Could not remove associated file from disk (non-fatal):', e);
+    }
 
     // 2. พอจัดการ "ลูก" หมดแล้ว ก็ค่อยมาลบ "แม่" (บทความหลัก)
     await prisma.articleDB.delete({
@@ -279,6 +343,8 @@ export async function getDeleteForm(id: number) {
 
 // (await cookies()).get('userId');
 
+// (await cookies()).get('userId');
+
 export async function getArticleForEdit(articleId: number) {
   // 1. เช็ค Cookie เพื่อหาคนที่ Login อยู่
   const cookie = await cookies()
@@ -295,6 +361,7 @@ export async function getArticleForEdit(articleId: number) {
     where: { id: articleId },
     include: {
       contributor: true, // <-- ดึงข้อมูล Contributor มาด้วยนะ!
+      coAuthors: true,
     }
   });
 

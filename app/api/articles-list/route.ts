@@ -3,7 +3,7 @@ import prisma from '../../../lib/prisma'; // ใช้ prisma client กลา�
 
 // Type for dynamic where clause
 interface ArticleListWhere {
-  article_status: string; // <-- ทำให้ status เป็น field ที่ต้องมีเสมอ
+  article_status?: string; // <-- สถานะเป็น optional: ถ้ามีจะกรองตามสถานะ ถ้าไม่มีจะใช้ default
   published_year?: number;
   OR?: { article_name?: { contains: string; mode: 'insensitive' } ; abstract?: { contains: string; mode: 'insensitive' } }[];
 }
@@ -17,6 +17,7 @@ export type DetailedArticleListItem = {
   academicTitle: string | null;
   firstName: string;
   lastName: string;
+  contributorName?: string | null;
   faculty: string | null;
   department: string | null;
   abstract: string | null;
@@ -33,14 +34,15 @@ export async function GET(req: NextRequest) {
     const q = searchParams.get('q');
     const year = searchParams.get('year');
 
-    // **หัวใจของการแก้ไขอยู่ตรงนี้!** //
-    // 1. เราตั้ง "กฎเหล็ก" ไว้เลยว่าต้องหาเฉพาะบทความที่มีสถานะเป็น 'approved' เท่านั้น!
-    const where: ArticleListWhere = {
-      article_status: 'approved',
-    };
-
-    // 2. เราจะลบการเช็ค status จาก URL ออกไปเลย เพราะเราไม่ต้องการให้ใครมาเปลี่ยนกฎนี้ได้
-    //    if (status) where.article_status = status; <-- ลบบรรทัดนี้ทิ้งไปเลย!
+    // หาก client ส่ง ?status=... มา ให้ใช้ค่านั้นเป็นเงื่อนไขการกรอง
+    // ถ้าไม่มี ให้ใช้ default 'approved' (เพื่อไม่กระทบหน้าอื่นๆ ที่เรียก API นี้)
+    const status = searchParams.get('status');
+    const where: ArticleListWhere = {};
+    if (status) {
+      where.article_status = status;
+    } else {
+      where.article_status = 'approved';
+    }
 
     // ส่วนการกรองอื่นๆ ยังทำงานได้เหมือนเดิมนะ
     if (year) where.published_year = Number(year);
@@ -75,7 +77,17 @@ export async function GET(req: NextRequest) {
 
     type ArticleRow = typeof articles[number];
     const formattedArticles: DetailedArticleListItem[] = articles.map((article: ArticleRow) => {
-      const [firstName, lastName] = (article.contributor?.contributor_name || 'N/A').split(' ');
+      // helper: safely parse contributor_name into first/last while sanitizing literal 'null' strings
+      const parseName = (name?: string | null) => {
+        if (!name) return ['', ''];
+        const parts = name.trim().split(/\s+/).map(p => (String(p).toLowerCase() === 'null' || String(p).toLowerCase() === 'undefined' ? '' : p));
+        const first = parts[0] || '';
+        const last = parts.slice(1).join(' ') || '';
+        return [first, last];
+      };
+
+      const [firstName, lastName] = parseName(article.contributor?.contributor_name ?? '');
+      const contributorName = article.contributor?.contributor_name ?? '';
       const personalInfo = article.user?.personal;
       return {
         articleId: article.id,
@@ -83,8 +95,9 @@ export async function GET(req: NextRequest) {
         publishedYear: article.published_year,
         articleType: article.articleType,
         academicTitle: article.contributor?.academic_title ?? null,
-        firstName: firstName || 'N/A',
+        firstName: firstName || '',
         lastName: lastName || '',
+        contributorName: contributorName || null,
         faculty: personalInfo?.faculty ?? null,
         department: personalInfo?.department ?? null,
         abstract: article.abstract,

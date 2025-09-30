@@ -11,6 +11,7 @@ type ArticleListItem = {
   academicTitle: string | null;
   firstName: string;
   lastName: string;
+  contributorName?: string | null;
   faculty: string | null;
   department: string | null;
   abstract: string | null;
@@ -32,7 +33,7 @@ const ArticleValidationPage = () => {
     async function load() {
       try {
         setLoading(true);
-        const res = await fetch(`/api/articles-list?page=${page}&pageSize=${pageSize}`);
+  const res = await fetch(`/api/articles-list?page=${page}&pageSize=${pageSize}&status=pending`);
         if (!res.ok) throw new Error('โหลดข้อมูลล้มเหลว');
         const json = await res.json();
         // รองรับทั้งโครงสร้างเก่า (array) และใหม่ ({items:[]})
@@ -98,15 +99,20 @@ const ArticleValidationPage = () => {
             pending: 'รอการตรวจสอบ',
             approved: 'เสร็จสิ้น',
           };
-          const mapped = data.map(item => ({
-            articleId: item.articleId,
-            title: item.articleName,
-            athor: `${item.academicTitle || ''} ${item.firstName} ${item.lastName}`.trim(),
-            field: item.academicTitle || '',
-            offset: item.department || item.faculty || '',
-            url: item.downloadPath,
-            status: statusMap[item.article_status || 'draft'] || item.article_status || 'รอการตรวจสอบ',
-          }));
+          const mapped = data.map(item => {
+            const owner = item.contributorName && item.contributorName.trim() !== ''
+              ? item.contributorName
+              : `${item.academicTitle || ''} ${item.firstName || ''} ${item.lastName || ''}`.trim();
+            return {
+              articleId: item.articleId,
+              title: item.articleName,
+              athor: owner || 'ไม่ระบุ',
+              field: item.academicTitle || '',
+              offset: item.department || item.faculty || '',
+              url: item.downloadPath,
+              status: statusMap[item.article_status || 'draft'] || item.article_status || 'รอการตรวจสอบ',
+            };
+          });
           return <PaginationFeature pathName={pathName} mockData={mapped} rowsValue={11} />;
         })()}
         {!loading && (data == null || data.length === 0) && <div className="w-full text-center py-10 text-gray-500">ไม่มีข้อมูลบทความ</div>}

@@ -6,7 +6,7 @@ type user = {
   email: string | undefined,
   type: string | undefined,
   description: string | undefined,
-  loginDate: string | undefined,
+  loginDate: string,
   id: number,
   
 }
@@ -23,6 +23,24 @@ const ManagementTableFeature = ({ id, name, email, type, description, loginDate 
     }
     return 'badge badge-soft badge-primary';
   }
+  // format login date for display in Thai locale (Asia/Bangkok)
+  const formatLoginDate = (iso: string) => {
+    if (!iso) return 'ยังไม่เข้าสู่ระบบ'
+    try {
+      const d = new Date(iso)
+      return new Intl.DateTimeFormat('th-TH', {
+        timeZone: 'Asia/Bangkok',
+        year: 'numeric',
+        month: 'short',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+      }).format(d)
+    } catch (e) {
+      return iso
+    }
+  }
+
   return (
     <tr key={id}>
       <td>
@@ -50,7 +68,7 @@ const ManagementTableFeature = ({ id, name, email, type, description, loginDate 
       </td>
 
       <td className="text-center">
-        <div>{loginDate}</div>
+        <div>{formatLoginDate(loginDate)}</div>
       </td>
 
       <td className="w-10 text-center">

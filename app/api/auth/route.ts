@@ -15,6 +15,20 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, error: 'Invalid password' }, { status: 401 });
   }
 
+  // update or create login record with current timestamp
+  try {
+    // prisma client types in this workspace may be out of sync with schema.prisma
+    // cast to any to avoid build-time type mismatch; runtime will still execute
+    await (prisma as any).login.upsert({
+      where: { userId: user.id },
+      update: { login_check_date: new Date() },
+      create: { userId: user.id, login_check_date: new Date() },
+    });
+  } catch (err) {
+    console.error('Failed to update login_check_date', err);
+    return NextResponse.json({ ok: false, error: 'Could not update login timestamp' }, { status: 500 });
+  }
+
   // สร้าง "พัสดุ" (Response) ที่เราจะส่งกลับไป
   // **สำคัญ!** เราใส่ userId เข้าไปใน JSON ที่จะส่งกลับตรงนี้เลย!
   const response = NextResponse.json({ ok: true, userId: user.id });
