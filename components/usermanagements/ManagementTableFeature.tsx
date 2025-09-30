@@ -13,11 +13,11 @@ type user = {
 const ManagementTableFeature = ({ id, name, email, type, description, loginDate }: user) => {
   const router = useRouter()
   const checkType = (type : unknown) =>{
-    if(type === 'อาจารย์'){
+    if(type === 'Teacher'){
       return 'badge badge-soft badge-secondary';
-    }else if(type === 'เจ้าหน้าที่'){
+    }else if(type === 'Staff'){
       return 'badge badge-soft badge-success';
-    }else if(type === 'ผู้ตรวจสอบ'){
+    }else if(type === 'Admin'){
       return 'badge badge-soft badge-warning';
     }
     return 'badge badge-soft badge-primary';

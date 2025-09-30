@@ -106,11 +106,11 @@ const UserManagement: React.FC = () => {
               <div className="flex gap-4">
                 <label className="inline-flex items-center gap-2">
                   <input type="radio" value="admin" {...register("role")} />
-                  <span className="text-sm">ผู้ตรวจสอบ</span>
+                  <span className="text-sm">Admin</span>
                 </label>
                 <label className="inline-flex items-center gap-2">
                   <input type="radio" value="staff" {...register("role")} />
-                  <span className="text-sm">เจ้าหน้าที่</span>
+                  <span className="text-sm">Staff</span>
                 </label>
                 <label className="inline-flex items-center gap-2">
                   <input type="radio" value="teacher" {...register("role")} />

@@ -5,8 +5,8 @@ async function main() {
   console.log('เริ่มทำการ Seed ข้อมูลตาม SQL dump...');
 
   // --- 1. สร้าง UserType ---
-  await prisma.userType.upsert({ where: { userTypeId: 1 }, update: {}, create: { id: 1, user_typename: 'Staff', userTypeId: 1 } });
-  await prisma.userType.upsert({ where: { userTypeId: 2 }, update: {}, create: { id: 2, user_typename: 'ผู้ตรวจสอบ', userTypeId: 2 } });
+  await prisma.userType.upsert({ where: { userTypeId: 1 }, update: {}, create: { id: 1, user_typename: 'Admin', userTypeId: 1 } });
+  await prisma.userType.upsert({ where: { userTypeId: 2 }, update: {}, create: { id: 2, user_typename: 'Staff', userTypeId: 2 } });
   await prisma.userType.upsert({ where: { userTypeId: 3 }, update: {}, create: { id: 3, user_typename: 'Teacher', userTypeId: 3 } });
   console.log('สร้าง UserType 3 ประเภทสำเร็จ');
 
@@ -32,15 +32,17 @@ async function main() {
   console.log('สร้าง Contributor ทั้งหมดสำเร็จ');
   
   // --- 3. สร้าง UserAuthentication ---
-  const user1 = await prisma.userAuthentication.create({ data: { username: 'teacher1', password: 'password123' } });
-  const user2 = await prisma.userAuthentication.create({ data: { username: 'staff1', password: 'staffpass' } });
-  const user3 = await prisma.userAuthentication.create({ data: { username: 'tanagon', password: '123456' } });
-  const user4 = await prisma.userAuthentication.create({ data: { username: 'admin', password: '123456' } });
+  const user1 = await prisma.userAuthentication.upsert({ where: { username: 'teacher1' }, update: {}, create: { username: 'teacher1', password: 'password123' } });
+  const user2 = await prisma.userAuthentication.upsert({ where: { username: 'staff1' }, update: {}, create: { username: 'staff1', password: 'staffpass' } });
+  const user3 = await prisma.userAuthentication.upsert({ where: { username: 'tanagon' }, update: {}, create: { username: 'tanagon', password: '123456' } });
+  const user4 = await prisma.userAuthentication.upsert({ where: { username: 'admin' }, update: {}, create: { username: 'admin', password: '123456' } });
   console.log('สร้าง UserAuthentication 4 คนสำเร็จ');
 
   // --- 4. สร้าง Personal Data ---
-  await prisma.personal.create({
-    data: {
+  await prisma.personal.upsert({
+    where: { userId: user1.id },
+    update: {},
+    create: {
       user: { connect: { id: user1.id } },
       user_name: 'Somchai S',
       user_fame: 'Assoc. Prof.',
@@ -48,17 +50,21 @@ async function main() {
       user_type: { connect: { userTypeId: 3 } },
     },
   });
-  await prisma.personal.create({
-    data: {
+  await prisma.personal.upsert({
+    where: { userId: user2.id },
+    update: {},
+    create: {
       user: { connect: { id: user2.id } },
       user_name: 'Malee M',
       user_fame: 'Asst. Prof.',
       age: 38,
-      user_type: { connect: { userTypeId: 1 } },
+      user_type: { connect: { userTypeId: 2 } },
     },
   });
-  await prisma.personal.create({
-    data: {
+  await prisma.personal.upsert({
+    where: { userId: user3.id },
+    update: {},
+    create: {
       user: { connect: { id: user3.id } },
       user_name: 'ธนากร ชนะภักดี',
       user_fame: 'ดร.',
@@ -71,27 +77,26 @@ async function main() {
       user_type: { connect: { userTypeId: 3 } },
     },
   });
-  await prisma.personal.create({
-    data: {
+  await prisma.personal.upsert({
+    where: { userId: user4.id },
+    update: {},
+    create: {
       user: { connect: { id: user4.id } },
       user_name: 'สมชาย',
       user_fame: 'ใจดี',
       age: 30,
-      user_type: { connect: { userTypeId: 2 } },
+      user_type: { connect: { userTypeId: 1 } },
     },
   });
   console.log('สร้าง Personal Data 4 คนสำเร็จ');
   
   // --- 5. สร้าง Login ---
-  // **ส่วนที่แก้ไข!** เอา skipDuplicates ออก
-  await prisma.login.createMany({
-    data: [
-        { userId: user1.id },
-        { userId: user2.id },
-        { userId: user3.id },
-        { userId: user4.id },
-    ]
-  });
+  await Promise.all([
+    prisma.login.upsert({ where: { userId: user1.id }, update: {}, create: { userId: user1.id } }),
+    prisma.login.upsert({ where: { userId: user2.id }, update: {}, create: { userId: user2.id } }),
+    prisma.login.upsert({ where: { userId: user3.id }, update: {}, create: { userId: user3.id } }),
+    prisma.login.upsert({ where: { userId: user4.id }, update: {}, create: { userId: user4.id } })
+  ]);
   console.log('สร้างข้อมูล Login สำเร็จ');
 
   // --- 6. สร้าง ArticleType ---

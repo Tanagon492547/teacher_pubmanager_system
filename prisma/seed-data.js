@@ -54,26 +54,26 @@ async function main() {
     prisma.userType.upsert({
       where: { userTypeId: 1 },
       update: {},
-      create: { id: 1, userTypeId: 1, user_typename: 'อาจารย์' }
+      create: { id: 1, userTypeId: 1, user_typename: 'Admin' }
     }),
     prisma.userType.upsert({
       where: { userTypeId: 2 },
       update: {},
-      create: { id: 2, userTypeId: 2, user_typename: 'นักวิจัย' }
+      create: { id: 2, userTypeId: 2, user_typename: 'Staff' }
     }),
     prisma.userType.upsert({
       where: { userTypeId: 3 },
       update: {},
-      create: { id: 3, userTypeId: 3, user_typename: 'ผู้ตรวจสอบ' }
+      create: { id: 3, userTypeId: 3, user_typename: 'Teacher' }
     })
   ]);
   console.log('✓ สร้าง UserType เรียบร้อย');
 
-  // สร้างผู้ตรวจสอบ
+  // สร้าง Admin
   const admin = await prisma.userAuthentication.upsert({
-    where: { username: 'reviewer' },
+    where: { username: 'admin' },
     update: {},
-    create: { username: 'reviewer', password: 'reviewer123' }
+    create: { username: 'admin', password: 'admin123' }
   });
 
   await prisma.personal.upsert({
@@ -81,19 +81,19 @@ async function main() {
     update: {},
     create: {
       userId: admin.id,
-      user_name: 'สมชาย',
-      user_fame: 'ใจดี',
+      user_name: 'ผู้ดูแลระบบ',
+      user_fame: 'Admin',
       age: 30,
-      email: 'reviewer@university.ac.th',
+      email: 'admin@university.ac.th',
       number_phone: '084-567-8901',
-      academic: 'พนักงานตรวจสอบ',
-      faculty: 'สำนักงานวิจัย',
-      department: 'ฝ่ายตรวจสอบบทความ',
-      userTypeId: 3
+      academic: 'ผู้ดูแลระบบ',
+      faculty: 'สำนักงานอธิการบดี',
+      department: 'ฝ่ายเทคโนโลยีสารสนเทศ',
+      userTypeId: 1
     }
   });
 
-  console.log('✓ สร้างผู้ตรวจสอบเรียบร้อย');
+  console.log('✓ สร้าง Admin เรียบร้อย');
 
   // สร้างผู้ใช้จำนวนมากแบบสุ่ม (50 คน)
   const users = [admin];
@@ -105,7 +105,7 @@ async function main() {
     const firstName = randomItem(firstNames);
     const lastName = randomItem(lastNames);
     const username = `user${String(i).padStart(3, '0')}`;
-    const userTypeId = randomInt(1, 2); // อาจารย์หรือนักวิจัย
+    const userTypeId = randomInt(2, 3); // Staff หรือ Teacher
     
     try {
       const user = await prisma.userAuthentication.create({
@@ -252,8 +252,8 @@ async function main() {
   console.log(`✓ บทความ: ${articles.length} บทความ`);
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
   console.log('\n🔑 ข้อมูล Login ตัวอย่าง:');
-  console.log('Username: reviewer, Password: reviewer123 (ผู้ตรวจสอบ)');
-  console.log('Username: user001-user050, Password: password123');
+  console.log('Username: admin, Password: admin123 (Admin)');
+  console.log('Username: user001-user050, Password: password123 (Staff/Teacher)');
 }
 
 main()
