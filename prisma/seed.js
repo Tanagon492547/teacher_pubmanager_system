@@ -6,7 +6,7 @@ async function main() {
 
   // --- 1. สร้าง UserType ---
   await prisma.userType.upsert({ where: { userTypeId: 1 }, update: {}, create: { id: 1, user_typename: 'Staff', userTypeId: 1 } });
-  await prisma.userType.upsert({ where: { userTypeId: 2 }, update: {}, create: { id: 2, user_typename: 'admin', userTypeId: 2 } });
+  await prisma.userType.upsert({ where: { userTypeId: 2 }, update: {}, create: { id: 2, user_typename: 'ผู้ตรวจสอบ', userTypeId: 2 } });
   await prisma.userType.upsert({ where: { userTypeId: 3 }, update: {}, create: { id: 3, user_typename: 'Teacher', userTypeId: 3 } });
   console.log('สร้าง UserType 3 ประเภทสำเร็จ');
 
@@ -74,9 +74,9 @@ async function main() {
   await prisma.personal.create({
     data: {
       user: { connect: { id: user4.id } },
-      user_name: 'admin',
-      user_fame: '888',
-      age: 325,
+      user_name: 'สมชาย',
+      user_fame: 'ใจดี',
+      age: 30,
       user_type: { connect: { userTypeId: 2 } },
     },
   });

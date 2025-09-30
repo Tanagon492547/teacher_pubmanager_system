@@ -1,204 +1,159 @@
 "use client";
 
+import { useEffect, useState } from 'react';
 import PaginationFeature from '@/components/PaginationFeature'
-import { usePathname } from 'next/navigation';
+import ArticleHistoryDetail from '@/components/myhistorys/ArticleHistoryDetail';
+import { usePathname, useRouter } from 'next/navigation';
 
-const mockData = [{
-    "หัวข้อ": "บทความที่ 1",
-    "สถานะ": "กำลังตรวจ",
-    "วันที่อัปโหลด": "2025-08-01",
-    "วันที่บทความสมบูรณ์": "",
-    "ผู้ตรวจ": "อาจารย์เอ"
-  },
-  {
-    "หัวข้อ": "บทความที่ 2",
-    "สถานะ": "ต้องเเก้ไข",
-    "วันที่อัปโหลด": "2025-08-02",
-    "วันที่บทความสมบูรณ์": "-",
-    "ผู้ตรวจ": "อาจารย์บี"
-  },
-  {
-    "หัวข้อ": "บทความที่ 3",
-    "สถานะ": "ข้อมูลสมบูรณ์",
-    "วันที่อัปโหลด": "2025-08-03",
-    "วันที่บทความสมบูรณ์": "2025-08-10",
-    "ผู้ตรวจ": "อาจารย์ซี"
-  },
-  {
-    "หัวข้อ": "บทความที่ 4",
-    "สถานะ": "เสร็จสิ้น",
-    "วันที่อัปโหลด": "2025-08-04",
-    "วันที่บทความสมบูรณ์": "2025-08-12",
-    "ผู้ตรวจ": "อาจารย์ดี"
-  },
-  {
-    "หัวข้อ": "บทความที่ 5",
-    "สถานะ": "กำลังตรวจ",
-    "วันที่อัปโหลด": "2025-08-05",
-    "วันที่บทความสมบูรณ์": "",
-    "ผู้ตรวจ": "อาจารย์อี"
-  },
-  {
-    "หัวข้อ": "บทความที่ 6",
-    "สถานะ": "ต้องเเก้ไข",
-    "วันที่อัปโหลด": "2025-08-06",
-    "วันที่บทความสมบูรณ์": "-",
-    "ผู้ตรวจ": "อาจารย์เอ"
-  },
-  {
-    "หัวข้อ": "บทความที่ 7",
-    "สถานะ": "ข้อมูลสมบูรณ์",
-    "วันที่อัปโหลด": "2025-08-07",
-    "วันที่บทความสมบูรณ์": "2025-08-18",
-    "ผู้ตรวจ": "อาจารย์บี"
-  },
-  {
-    "หัวข้อ": "บทความที่ 8",
-    "สถานะ": "เสร็จสิ้น",
-    "วันที่อัปโหลด": "2025-08-08",
-    "วันที่บทความสมบูรณ์": "2025-08-20",
-    "ผู้ตรวจ": "อาจารย์ซี"
-  },
-  {
-    "หัวข้อ": "บทความที่ 9",
-    "สถานะ": "กำลังตรวจ",
-    "วันที่อัปโหลด": "2025-08-09",
-    "วันที่บทความสมบูรณ์": "",
-    "ผู้ตรวจ": "อาจารย์ดี"
-  },
-  {
-    "หัวข้อ": "บทความที่ 10",
-    "สถานะ": "ต้องเเก้ไข",
-    "วันที่อัปโหลด": "2025-08-10",
-    "วันที่บทความสมบูรณ์": "-",
-    "ผู้ตรวจ": "อาจารย์อี"
-  },
-  {
-    "หัวข้อ": "บทความที่ 11",
-    "สถานะ": "ข้อมูลสมบูรณ์",
-    "วันที่อัปโหลด": "2025-08-11",
-    "วันที่บทความสมบูรณ์": "2025-08-27",
-    "ผู้ตรวจ": "อาจารย์เอ"
-  },
-  {
-    "หัวข้อ": "บทความที่ 12",
-    "สถานะ": "เสร็จสิ้น",
-    "วันที่อัปโหลด": "2025-08-12",
-    "วันที่บทความสมบูรณ์": "2025-08-30",
-    "ผู้ตรวจ": "อาจารย์บี"
-  },
-  {
-    "หัวข้อ": "บทความที่ 13",
-    "สถานะ": "กำลังตรวจ",
-    "วันที่อัปโหลด": "2025-08-13",
-    "วันที่บทความสมบูรณ์": "",
-    "ผู้ตรวจ": "อาจารย์ซี"
-  },
-  {
-    "หัวข้อ": "บทความที่ 14",
-    "สถานะ": "ต้องเเก้ไข",
-    "วันที่อัปโหลด": "2025-08-14",
-    "วันที่บทความสมบูรณ์": "-",
-    "ผู้ตรวจ": "อาจารย์ดี"
-  },
-  {
-    "หัวข้อ": "บทความที่ 15",
-    "สถานะ": "ข้อมูลสมบูรณ์",
-    "วันที่อัปโหลด": "2025-08-15",
-    "วันที่บทความสมบูรณ์": "2025-09-04",
-    "ผู้ตรวจ": "อาจารย์อี"
-  },
-  {
-    "หัวข้อ": "บทความที่ 16",
-    "สถานะ": "เสร็จสิ้น",
-    "วันที่อัปโหลด": "2025-08-16",
-    "วันที่บทความสมบูรณ์": "2025-09-06",
-    "ผู้ตรวจ": "อาจารย์เอ"
-  },
-  {
-    "หัวข้อ": "บทความที่ 17",
-    "สถานะ": "กำลังตรวจ",
-    "วันที่อัปโหลด": "2025-08-17",
-    "วันที่บทความสมบูรณ์": "",
-    "ผู้ตรวจ": "อาจารย์บี"
-  },
-  {
-    "หัวข้อ": "บทความที่ 18",
-    "สถานะ": "ต้องเเก้ไข",
-    "วันที่อัปโหลด": "2025-08-18",
-    "วันที่บทความสมบูรณ์": "-",
-    "ผู้ตรวจ": "อาจารย์ซี"
-  },
-  {
-    "หัวข้อ": "บทความที่ 19",
-    "สถานะ": "ข้อมูลสมบูรณ์",
-    "วันที่อัปโหลด": "2025-08-19",
-    "วันที่บทความสมบูรณ์": "2025-09-12",
-    "ผู้ตรวจ": "อาจารย์ดี"
-  },
-  {
-    "หัวข้อ": "บทความที่ 20",
-    "สถานะ": "เสร็จสิ้น",
-    "วันที่อัปโหลด": "2025-08-20",
-    "วันที่บทความสมบูรณ์": "2025-09-14",
-    "ผู้ตรวจ": "อาจารย์อี"
-  },
-  {
-    "หัวข้อ": "บทความที่ 21",
-    "สถานะ": "กำลังตรวจ",
-    "วันที่อัปโหลด": "2025-08-21",
-    "วันที่บทความสมบูรณ์": "",
-    "ผู้ตรวจ": "อาจารย์เอ"
-  },
-  {
-    "หัวข้อ": "บทความที่ 22",
-    "สถานะ": "ต้องเเก้ไข",
-    "วันที่อัปโหลด": "2025-08-22",
-    "วันที่บทความสมบูรณ์": "-",
-    "ผู้ตรวจ": "อาจารย์บี"
-  },
-  {
-    "หัวข้อ": "บทความที่ 23",
-    "สถานะ": "ข้อมูลสมบูรณ์",
-    "วันที่อัปโหลด": "2025-08-23",
-    "วันที่บทความสมบูรณ์": "2025-09-20",
-    "ผู้ตรวจ": "อาจารย์ซี"
-  },
-  {
-    "หัวข้อ": "บทความที่ 24",
-    "สถานะ": "เสร็จสิ้น",
-    "วันที่อัปโหลด": "2025-08-24",
-    "วันที่บทความสมบูรณ์": "2025-09-22",
-    "ผู้ตรวจ": "อาจารย์ดี"
-  }
-]
+interface StatusHistoryItem {
+  status: string;
+  date: string;
+  reviewer: string;
+  note: string;
+}
 
+interface Article {
+  id: number;
+  title: string;
+  status: string;
+  uploadDate: string;
+  completedDate: string | null;
+  reviewer: string;
+  reviewerNote: string;
+  author: string;
+  statusHistory: StatusHistoryItem[];
+}
+
+interface HistoryData {
+  articles: Article[];
+  userType: string;
+  userTypeId: number;
+}
 
 const MyHistoryPage = () => {
+  const path = usePathname();
+  const router = useRouter();
+  const [historyData, setHistoryData] = useState<HistoryData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [sortBy, setSortBy] = useState('latest');
+  const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
 
-  const path =  usePathname();
+  useEffect(() => {
+    fetchHistory();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const fetchHistory = async () => {
+    try {
+      const response = await fetch('/api/article-history');
+      if (response.status === 401) {
+        router.push('/login');
+        return;
+      }
+      if (!response.ok) {
+        throw new Error('Failed to fetch history');
+      }
+      const data = await response.json();
+      setHistoryData(data);
+    } catch (error) {
+      console.error('Error fetching history:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSortBy(e.target.value);
+  };
+
+  const handleViewDetail = (item: Record<string, unknown>) => {
+    // หา article จาก id ที่ส่งมา
+    const article = historyData?.articles.find(a => a.title === item.หัวข้อ);
+    if (article) {
+      setSelectedArticle(article);
+    }
+  };
+
+  // จัดเรียงข้อมูล
+  const sortedArticles = historyData?.articles ? [...historyData.articles].sort((a, b) => {
+    if (sortBy === 'latest') {
+      return new Date(b.uploadDate).getTime() - new Date(a.uploadDate).getTime();
+    } else if (sortBy === 'oldest') {
+      return new Date(a.uploadDate).getTime() - new Date(b.uploadDate).getTime();
+    }
+    return 0;
+  }) : [];
+
+  // แปลงข้อมูลให้เข้ากับ PaginationFeature
+  const mockData = sortedArticles.map(article => ({
+    "หัวข้อ": article.title,
+    "สถานะ": article.status,
+    "วันที่อัปโหลด": new Date(article.uploadDate).toLocaleDateString('th-TH'),
+    "วันที่บทความสมบูรณ์": article.completedDate 
+      ? new Date(article.completedDate).toLocaleDateString('th-TH') 
+      : '-',
+    "ผู้ตรวจ": article.reviewer
+  }));
+
+  if (loading) {
+    return (
+      <div className="w-full flex flex-col justify-center items-center px-4 py-10">
+        <div className="loading loading-spinner loading-lg"></div>
+      </div>
+    );
+  }
+
   return (
-    <div className="w-full flex flex-col justify-center items-center px-4 py-10">
-      <div className="w-full max-w-(--8xl) flex flex-col justify-between items-center">
-        <div className="w-full flex flex-row justify-between items-center my-5">
-          <p className="text-3xl">ประวัติบทความ</p>
-          <div className="flex flex-row gap-2">
-           
-            <div className="w-xs">
-              <select defaultValue="เรียงตามผลงานล่าสุด" className="select">
-                <option disabled={true}>เรียงตามผลงานล่าสุด</option>
-                <option>เรียงตามผลงานล่าสุด</option>
-                <option>Amber</option>
-                <option>Velvet</option>
-              </select>
+    <>
+      <div className="w-full flex flex-col justify-center items-center px-4 py-10">
+        <div className="w-full max-w-(--8xl) flex flex-col justify-between items-center">
+          <div className="w-full flex flex-row justify-between items-center my-5">
+            <div>
+              <p className="text-3xl">ประวัติบทความ</p>
+              {historyData && (
+                <p className="text-sm text-gray-500 mt-2">
+                  บทบาท: {historyData.userType} | จำนวนบทความ: {sortedArticles.length} รายการ
+                </p>
+              )}
+            </div>
+            <div className="flex flex-row gap-2">
+              <div className="w-xs">
+                <select 
+                  value={sortBy} 
+                  onChange={handleSortChange}
+                  className="select select-bordered"
+                >
+                  <option value="latest">เรียงตามผลงานล่าสุด</option>
+                  <option value="oldest">เรียงตามผลงานเก่าสุด</option>
+                </select>
+              </div>
             </div>
           </div>
+
+          {mockData.length === 0 ? (
+            <div className="w-full text-center py-10">
+              <p className="text-gray-500">ยังไม่มีประวัติบทความ</p>
+            </div>
+          ) : (
+            <PaginationFeature 
+              pathName={path} 
+              mockData={mockData} 
+              rowsValue={15} 
+              onViewDetail={handleViewDetail}
+            />
+          )}
         </div>
-
-        <PaginationFeature pathName={path} mockData={mockData} rowsValue={15}  />
-
       </div>
-    </div>
+
+      {selectedArticle && (
+        <ArticleHistoryDetail
+          title={selectedArticle.title}
+          author={selectedArticle.author}
+          statusHistory={selectedArticle.statusHistory}
+          onClose={() => setSelectedArticle(null)}
+        />
+      )}
+    </>
   );
 };
 

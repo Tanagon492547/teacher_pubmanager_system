@@ -3,6 +3,7 @@ import prisma from '@/lib/prisma';
 import path from 'path';
 import { mkdir, writeFile, stat } from 'fs/promises';
 import { revalidatePath } from 'next/cache';
+import { cookies } from 'next/headers';
 
 export async function POST(request: Request, { params }: { params: { id: string } }) {
   try {
@@ -10,6 +11,11 @@ export async function POST(request: Request, { params }: { params: { id: string 
     if (isNaN(articleId)) {
       return NextResponse.json({ error: 'รหัสบทความไม่ถูกต้อง' }, { status: 400 });
     }
+
+    // ดึง userId จาก cookie
+    const cookieStore = await cookies();
+    const userId = cookieStore.get('userId')?.value;
+    const reviewerId = userId ? parseInt(userId) : null;
 
     const formData = await request.formData();
     const statusValue = (formData.get('status') as string) || '';
@@ -42,10 +48,19 @@ export async function POST(request: Request, { params }: { params: { id: string 
     await prisma.articleDB.update({ where: { id: articleId }, data: updateData });
 
     if (statusValue) {
-      await prisma.articleStatusHistory.create({ data: { articleId, article_status: statusValue } });
+      // บันทึกประวัติพร้อมข้อมูลผู้ตรวจ
+      await prisma.articleStatusHistory.create({ 
+        data: { 
+          articleId, 
+          article_status: statusValue,
+          reviewerId: reviewerId,
+          reviewerNote: comment.trim() || null
+        } 
+      });
     }
 
-    if (comment.trim()) {
+    // ถ้ามี comment เพิ่มเติม ให้บันทึกใน category ด้วย (ถ้าต้องการ)
+    if (comment.trim() && !statusValue) {
       await prisma.category.create({ data: { articleId, summary: comment.trim() } });
     }
 

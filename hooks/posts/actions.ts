@@ -143,7 +143,7 @@ export async function addArticle(formData: FormData): Promise<{ error?: string }
         published_year: publishedDate.getFullYear(),
         abstract: abstract,
         publish_status: rights,
-        article_status: 'pending',
+        article_status: 'รอตรวจ',
         articleType: articleTypeName,
         contributor: { connect: { id: mainContributor.id } },
         user: { connect: { id: currentUserId } } // <-- (ส่วนที่แก้ไข!) เชื่อมกับ User ที่ Login อยู่
@@ -151,6 +151,16 @@ export async function addArticle(formData: FormData): Promise<{ error?: string }
     });
     newArticleId = newArticle.id;
     console.log(`สร้างบทความในฐานข้อมูลสำเร็จ! ได้ ID: ${newArticleId}`);
+
+    // บันทึกประวัติเริ่มต้น
+    await prisma.articleStatusHistory.create({
+      data: {
+        articleId: newArticleId,
+        article_status: 'รอตรวจ',
+        reviewerId: currentUserId
+      }
+    });
+    console.log(`บันทึกประวัติเริ่มต้นสำเร็จ`);
 
     // --- จัดการไฟล์โดยใช้ ID ที่ได้มา (เหมือนเดิม) ---
     let dbFilePath: string | undefined = undefined;

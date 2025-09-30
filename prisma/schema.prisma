@@ -8,12 +8,13 @@ datasource db {
 }
 
 model UserAuthentication {
-  id       Int         @id @default(autoincrement())
-  username String      @unique
-  password String
-  articles ArticleDB[]
-  login    Login?
-  personal Personal?
+  id                   Int                    @id @default(autoincrement())
+  username             String                 @unique
+  password             String
+  articles             ArticleDB[]
+  login                Login?
+  personal             Personal?
+  reviewedArticles     ArticleStatusHistory[]
 }
 
 model Login {
@@ -81,13 +82,17 @@ model ArticleDB {
 }
 
 model ArticleStatusHistory {
-  id             Int       @id @default(autoincrement())
+  id             Int                 @id @default(autoincrement())
   articleId      Int
   article_status String
-  save_history   DateTime  @default(now())
-  article        ArticleDB @relation(fields: [articleId], references: [id])
+  save_history   DateTime            @default(now())
+  reviewerId     Int?
+  reviewerNote   String?
+  article        ArticleDB           @relation(fields: [articleId], references: [id])
+  reviewer       UserAuthentication? @relation(fields: [reviewerId], references: [id])
 
   @@index([articleId])
+  @@index([reviewerId])
 }
 
 model ArticleType {

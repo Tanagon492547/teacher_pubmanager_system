@@ -7,11 +7,12 @@ type tableHerdersType = {
   successDate : string | undefined,
   inspector : string | undefined,
   status: string | undefined,
+  onViewDetail?: () => void,
 }
 
-const HistiryTableFeature = ({ pathName, index, title, uploadDate, successDate,  inspector ,status }: tableHerdersType) => {
+const HistiryTableFeature = ({ pathName, index, title, uploadDate, successDate,  inspector ,status, onViewDetail }: tableHerdersType) => {
   const getButtonClass = (status: any) => {
-    if (status === 'กำลังตรวจ') {
+    if (status === 'กำลังตรวจ' || status === 'รอตรวจ') {
       return "badge bg-[var(--color-warning)]/70 text-[var(--color-success-content)]";
     } else if (status === 'ต้องเเก้ไข') {
       return "badge bg-[var(--color-error)] text-[var(--color-success-content)]";
@@ -30,6 +31,16 @@ const HistiryTableFeature = ({ pathName, index, title, uploadDate, successDate, 
       <td className="w-10 text-center">{uploadDate}</td>
       <td className="w-10 text-center">{successDate}</td>
       <td className="w-10 text-center">{inspector}</td>
+      <td className="w-10 text-center">
+        {onViewDetail && (
+          <button 
+            onClick={onViewDetail}
+            className="btn btn-sm btn-ghost"
+          >
+            ดูรายละเอียด
+          </button>
+        )}
+      </td>
     </tr>
   )
 };

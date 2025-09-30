@@ -17,7 +17,7 @@ const ManagementTableFeature = ({ id, name, email, type, description, loginDate 
       return 'badge badge-soft badge-secondary';
     }else if(type === 'เจ้าหน้าที่'){
       return 'badge badge-soft badge-success';
-    }else if(type === 'Admin'){
+    }else if(type === 'ผู้ตรวจสอบ'){
       return 'badge badge-soft badge-warning';
     }
     return 'badge badge-soft badge-primary';

@@ -13,9 +13,10 @@ type data = {
   mockData: object,
   pathName: string | undefined,
   rowsValue: number,
+  onViewDetail?: (item: any) => void,
 }
 
-const PaginationFeature = ({ mockData, pathName, rowsValue }: data) => {
+const PaginationFeature = ({ mockData, pathName, rowsValue, onViewDetail }: data) => {
   const [tablePage, setTablePage] = useState(1); // หน้าเริ่มต้นของตาราง
   const [rowsPerPage, setRowsPerPage] = useState(10); // จำนวนเเถวต่อหน้า 
   const arrData = Object.values(mockData); // แปลง object เป็น array ของ values
@@ -73,12 +74,23 @@ const PaginationFeature = ({ mockData, pathName, rowsValue }: data) => {
                   <th className="w-32 text-center align-top"><p>วันที่อัปโหลด</p></th>
                   <th className=" w-24 text-center align-top"><p>วันที่บทความสมบูรณ์</p></th>
                   <th className="w-24 text-center align-top"><p>ผู้ตรวจ</p></th>
+                  <th className="w-24 text-center align-top"><p>ดูรายละเอียด</p></th>
 
                 </tr>
               </thead>
               <tbody>
                 {varlueResult.map((value, index) => {
-                  return <HistiryTableFeature key={index} index={index + 1} title={value.หัวข้อ} uploadDate={value.วันที่อัปโหลด} successDate={value.วันที่บทความสมบูรณ์} inspector={value.ผู้ตรวจ} status={value.สถานะ} pathName={pathName} />
+                  return <HistiryTableFeature 
+                    key={index} 
+                    index={index + 1} 
+                    title={value.หัวข้อ} 
+                    uploadDate={value.วันที่อัปโหลด} 
+                    successDate={value.วันที่บทความสมบูรณ์} 
+                    inspector={value.ผู้ตรวจ} 
+                    status={value.สถานะ} 
+                    pathName={pathName}
+                    onViewDetail={onViewDetail ? () => onViewDetail(value) : undefined}
+                  />
                 })}
               </tbody>
             </table>

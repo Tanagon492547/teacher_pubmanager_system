@@ -106,7 +106,7 @@ const EditUserPage: React.FC = () => {
             <label className="text-sm">ประเภทผู้ใช้</label>
             <select {...register('user_typeid')} className="w-full border rounded p-2 mt-1">
               <option value="">เลือกประเภท</option>
-              <option value="1">Admin</option>
+              <option value="1">ผู้ตรวจสอบ</option>
               <option value="2">เจ้าหน้าที่</option>
               <option value="3">อาจารย์</option>
             </select>
