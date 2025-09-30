@@ -23,7 +23,7 @@
 <div align="center"> 
 <p>----------------------------------------------------------------------------------------------------------------</p>
 </div>
-<div align="center">  
+<div align="center">
 <p>นี่คือภาพตัวอย่างหน้าตาของเว็บไซต์เรา</p>  
    <img src="/public/screens/2.png" alt="ภาพตัวอย่างโปรเจกต์" width="700" />  
 </div>
@@ -43,15 +43,15 @@
 
 ```bash
 
-git clone https://github.com/Tanagon492547/teacher\_pubmanager\_system.git
+git clone https://github.com/Tanagon492547/teacher_pubmanager_system.git
 
-```
+``` 
 
 หลังจากนั้น ให้เข้าไปที่โฟลเดอร์ของโปรเจกต์:
 
 ```bash
 
-cd teacher\_pubmanager\_system
+cd teacher_pubmanager_system
 
 ```
 
@@ -67,12 +67,11 @@ cd teacher\_pubmanager\_system
 
 ### **ขั้นตอนที่ 3: ตั้งค่า Environment**
 
-1. คัดลอกไฟล์ .env.example (ถ้ามี) แล้วเปลี่ยนชื่อเป็น .env  
-2. เปิดไฟล์ .env ขึ้นมาแล้วตรวจสอบว่า DATABASE\_URL ถูกต้องหรือไม่ สำหรับโปรเจกต์นี้ เราใช้ SQLite ดังนั้นค่าควรจะเป็นแบบนี้:  
+1. เปิดไฟล์ .env ขึ้นมาแล้วตรวจสอบว่า DATABASE_URL ถูกต้องหรือไม่ สำหรับโปรเจกต์นี้ เราใช้ SQLite ดังนั้นค่าควรจะเป็นแบบนี้:  
 
 ```bash
 
-   DATABASE\_URL="file:./prisma/dev.db"
+   DATABASE_URL="file:./prisma/dev.db"
 
 ```
 
@@ -82,7 +81,7 @@ cd teacher\_pubmanager\_system
 
 ```bash
 
-npx prisma migrate dev \--name init
+npx prisma migrate dev --name init
 
 ```
 
