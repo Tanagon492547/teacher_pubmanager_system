@@ -1,7 +1,7 @@
 'use server';
 
 import prisma from '@/lib/prisma';
-import { mkdir, writeFile, stat } from 'fs/promises';
+import { mkdir, writeFile, stat, unlink } from 'fs/promises';
 import { revalidatePath } from 'next/cache';
 import { notFound, redirect } from 'next/navigation';
 import path from 'path';
@@ -300,6 +300,29 @@ export async function getDeleteForm(id: number) {
     await prisma.category.deleteMany({
       where: { articleId: id },
     });
+    // Delete co-authors (children) to prevent foreign key constraint errors
+    await prisma.coAuthor.deleteMany({
+      where: { articleId: id },
+    });
+
+    // Optionally, if there's an uploaded file on disk, try to remove it silently
+    try {
+      const articleRecord = await prisma.articleDB.findUnique({ where: { id } });
+      if (articleRecord && articleRecord.article_file) {
+        // article_file is stored like '/file/pdf/123.pdf' -> map to public path
+        const filePath = path.join(process.cwd(), 'public', articleRecord.article_file.replace(/^\//, ''));
+        try {
+          await stat(filePath);
+          await unlink(filePath);
+          console.log(`Deleted article file from disk: ${filePath}`);
+        } catch (e) {
+          // ignore file not found or permission errors
+          console.log(`No local file to delete or cannot delete: ${filePath}`, (e as any)?.message || e);
+        }
+      }
+    } catch (e) {
+      console.warn('Could not remove associated file from disk (non-fatal):', e);
+    }
 
     // 2. พอจัดการ "ลูก" หมดแล้ว ก็ค่อยมาลบ "แม่" (บทความหลัก)
     await prisma.articleDB.delete({

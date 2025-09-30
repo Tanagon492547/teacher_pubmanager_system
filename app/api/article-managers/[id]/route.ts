@@ -59,6 +59,8 @@ export async function GET(
       return {
         articleId: article.id,
         article_name: article.article_name,
+         // include full contributor name when available
+        contributor_name: article.contributor?.contributor_name ?? null,
         uploadDate,
         published_year: String(article.published_year || 'N/A'),
         articleType: article.articleType || 'N/A',

@@ -1,5 +1,6 @@
 "use client";
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 // ใช้เรียก API route แทนการ import server action โดยตรง
 
 type Article = {
@@ -12,6 +13,7 @@ type Article = {
   article_status: string | null;
   article_file: string | null;
   contributor?: { contributor_name: string; academic_title: string | null } | null;
+  coAuthors?: { academic_title?: string | null; firstname: string; lastname: string }[];
 };
 
 interface Props { article: Article }
@@ -19,6 +21,7 @@ interface Props { article: Article }
 const ReviewArticleForm: React.FC<Props> = ({ article }) => {
   // Rights now shown as text only (no toggle per user request to display details as text)
   const [rights] = useState(article.publish_status || 'private');
+  const router = useRouter();
   // Derive file name for download link
   const fileName = article.article_file ? article.article_file.split('/').pop() || '' : '';
   const [comment, setComment] = useState('');
@@ -28,7 +31,14 @@ const ReviewArticleForm: React.FC<Props> = ({ article }) => {
   const [success, setSuccess] = useState<string | null>(null);
 
   const contributorTitle = article.contributor?.academic_title || 'อ.';
-  const [firstname, lastname] = (article.contributor?.contributor_name || '').split(' ');
+  const parseNameSafe = (name?: string | null) => {
+    if (!name) return ['', ''];
+    const parts = name.trim().split(/\s+/).map(p => (String(p).toLowerCase() === 'null' || String(p).toLowerCase() === 'undefined' ? '' : p));
+    const first = parts[0] || '';
+    const last = parts.slice(1).join(' ') || '';
+    return [first, last];
+  };
+  const [firstname, lastname] = parseNameSafe(article.contributor?.contributor_name ?? '');
 
   async function handleSubmit(status: 'approved' | 'revision') {
     setLoading(status);
@@ -46,6 +56,18 @@ const ReviewArticleForm: React.FC<Props> = ({ article }) => {
         setError(json.error || 'ไม่สามารถบันทึกได้');
       } else {
         setSuccess(status === 'approved' ? 'อนุมัติบทความสำเร็จ' : 'ส่งกลับเพื่อแก้ไขสำเร็จ');
+        // After a successful approval, redirect back to the validation list.
+        if (status === 'approved') {
+          // small delay so the user can see the success message briefly
+          setTimeout(() => {
+            try {
+              router.push('/articlevalidation');
+            } catch (err) {
+              // ignore push errors in client navigation
+              console.error('Navigation error', err);
+            }
+          }, 600);
+        }
       }
     } catch (e) {
       console.error(e);
@@ -100,6 +122,22 @@ const ReviewArticleForm: React.FC<Props> = ({ article }) => {
           <div>
             <p className="text-gray-500 text-sm mb-1">บทคัดย่อ</p>
             <div className="p-4 rounded-md bg-gray-50 text-sm whitespace-pre-wrap leading-relaxed border">{article.abstract || '—'}</div>
+          </div>
+          {/* Co-Authors */}
+          <div>
+            <p className="text-gray-500 text-sm mb-1">ผู้ร่วมบทความ</p>
+            {Array.isArray(article.coAuthors) && article.coAuthors.length > 0 ? (
+              <ul className="list-disc pl-5 text-sm">
+                {article.coAuthors.map((c, idx) => (
+                  <li key={idx} className="mb-1">
+                    <span className="font-medium">{(c.academic_title || '').trim() || 'อ.'} </span>
+                    <span>{c.firstname} {c.lastname}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <div className="italic text-gray-400">ไม่มีผู้ร่วมบทความ</div>
+            )}
           </div>
         </section>
 

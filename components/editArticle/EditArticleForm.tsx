@@ -41,8 +41,15 @@ const EditArticleFeature = ({ article }: { article: ArticleWithContributor }) =>
   const [fileName, setFileName] = useState(article.article_file || '');
   const [serverError, setServerError] = useState<string | null>(null);
 
-  // แยกชื่อ-นามสกุลของผู้เขียนหลัก
-  const [mainAuthorFirstname, mainAuthorLastname] = article.contributor?.contributor_name.split(' ') ?? ['', ''];
+  // แยกชื่อ-นามสกุลของผู้เขียนหลัก (parse อย่างปลอดภัย)
+  const parseNameSafe = (name?: string | null) => {
+    if (!name) return ['', ''];
+    const parts = name.trim().split(/\s+/).map(p => (String(p).toLowerCase() === 'null' || String(p).toLowerCase() === 'undefined' ? '' : p));
+    const first = parts[0] || '';
+    const last = parts.slice(1).join(' ') || '';
+    return [first, last];
+  };
+  const [mainAuthorFirstname, mainAuthorLastname] = parseNameSafe(article.contributor?.contributor_name ?? '');
 
   const { register, handleSubmit, control, watch, formState: { isSubmitting, isDirty } } = useForm<FormValues>({
     // **หัวใจของการแสดงผล!** เติมข้อมูลเก่าทั้งหมดลงในฟอร์ม

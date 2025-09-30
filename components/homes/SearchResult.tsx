@@ -25,6 +25,7 @@ interface ArticlesListAPIItem {
   academicTitle: string | null;
   firstName: string;
   lastName: string;
+  contributorName?: string | null;
   faculty: string | null;
   department: string | null;
   abstract: string | null;
@@ -67,7 +68,7 @@ const SearchResult = () => {
         const formattedData: DisplayArticle[] = apiData.items.map((article) => ({
           id: String(article.articleId),
             title: article.articleName,
-            athor: `${article.firstName} ${article.lastName}`,
+            athor: (article.contributorName && article.contributorName.trim() !== '') ? article.contributorName : `${article.firstName} ${article.lastName}`,
             field: article.academicTitle,
             offset: article.department,
             url: article.downloadPath,

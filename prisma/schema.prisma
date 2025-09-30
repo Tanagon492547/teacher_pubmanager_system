@@ -19,6 +19,8 @@ model UserAuthentication {
 model Login {
   id     Int                @id @default(autoincrement())
   userId Int                @unique
+  // last time the user successfully logged in (optional)
+  login_check_date DateTime?
   user   UserAuthentication @relation(fields: [userId], references: [id])
 }
 

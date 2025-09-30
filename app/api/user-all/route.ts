@@ -10,7 +10,8 @@ export type FormattedUser = {
   // email: string | null;
   type: string;
   detail: string;
-  // login_check_date ถูกลบออกไปแล้ว
+  // ensure login_check_date is always present (string). Empty string when unknown.
+  login_check_date: string;
 };
 
 // ย้ายฟังก์ชัน getAllUsers มาไว้ในไฟล์นี้เลย
@@ -24,20 +25,24 @@ export async function getAllUsers(): Promise<FormattedUser[]> {
             user_type: true,
           },
         },
-        // เราไม่จำเป็นต้อง include: login แล้ว เพราะไม่ได้ใช้ข้อมูลจากตารางนั้น
+        // include login so we can expose the last-login timestamp
+        login: true,
       },
     });
 
     // 2. จัดรูปแบบข้อมูล (map) ให้อยู่ในรูปแบบที่เราต้องการ
     const formattedUsers = users.map(user => {
       const personalInfo = user.personal;
+      const loginInfo = (user as any).login;
 
       return {
         userId: user.id,
         name: personalInfo?.user_name || 'N/A',
         // email: personalInfo?.email || "null",
-        type: personalInfo?.user_type.user_typename || 'N/A',
+  type: personalInfo?.user_type?.user_typename || 'N/A',
         detail: `Username: ${user.username}, Title: ${personalInfo?.user_fame || '-'}`,
+  // map login_check_date to an ISO string; always return a string (empty if unknown)
+  login_check_date: loginInfo?.login_check_date ? loginInfo.login_check_date.toISOString() : '',
         // login_check_date ถูกลบออกไปแล้ว
       };
     });
