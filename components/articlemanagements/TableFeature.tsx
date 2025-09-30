@@ -46,11 +46,31 @@ const TableFeature = ({ pathName, index, title, uploadDate, publishYear, type, s
     // router.replace(`/editArticle/${articleId}`)
   }
 
+  // Format ISO/Date string into Thailand time (Asia/Bangkok) without seconds/milliseconds
+  const formatUploadDateToBangkok = (iso?: string | null) => {
+    if (!iso) return '—';
+    try {
+      const dt = new Date(iso);
+      if (isNaN(dt.getTime())) return '—';
+      // Use Intl.DateTimeFormat to convert to Asia/Bangkok and omit seconds
+      return new Intl.DateTimeFormat('th-TH', {
+        timeZone: 'Asia/Bangkok',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+      }).format(dt);
+    } catch (e) {
+      return '—';
+    }
+  };
+
   return (
     <tr key={index}>
       <td className="w-10 text-center">{index}</td>
       <td className="">{title}</td>
-      <td className="w-10 text-center">{uploadDate}</td>
+  <td className="w-10 text-center">{formatUploadDateToBangkok(uploadDate)}</td>
       <td className="w-10 text-center">{publishYear}</td>
       <td className="w-10 text-center overflow-hidden text-ellipsis whitespace-nowrap">{type}</td>
       <td className="w-10 text-center"><span className={`w-30 p-2 rounded-full  ${getButtonClass(status)}`}>{status}</span></td>

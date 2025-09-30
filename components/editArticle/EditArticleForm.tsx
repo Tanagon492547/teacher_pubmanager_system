@@ -14,6 +14,7 @@ const UploadIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" width="24" he
 // **ส่วนสำคัญ!** สร้าง Type ที่มีข้อมูล Article และ Contributor ซ้อนกันอยู่
 type ArticleWithContributor = ArticleDB & {
   contributor: Contributor | null;
+  coAuthors?: { id: number; academic_title?: string | null; firstname: string; lastname: string }[];
 };
 
 // Type สำหรับข้อมูลในฟอร์ม (ให้ครบทุกช่อง!)
@@ -48,12 +49,13 @@ const EditArticleFeature = ({ article }: { article: ArticleWithContributor }) =>
     defaultValues: {
       article_name: article.article_name,
       article_type: article.articleType || '',
-      published_year: article.published_year ? new Date(article.published_year, 0, 2).toISOString().split('T')[0] : '',
+      // Prefer full published_date when available; fallback to year-only
+      published_year: (article.published_date ? new Date(article.published_date).toISOString().split('T')[0] : (article.published_year ? `${article.published_year}-01-02` : '')),
       abstract: article.abstract || '',
       author_academic_title: article.contributor?.academic_title || '',
       author_firstname: mainAuthorFirstname,
       author_lastname: mainAuthorLastname,
-      coAuthors: [], // **หมายเหตุ:** ส่วนนี้ยังไม่ได้ดึงข้อมูล co-author เก่ามาแสดงนะ เพราะ Schema ของเรายังไม่รองรับจ้ะ
+      coAuthors: article.coAuthors && Array.isArray(article.coAuthors) ? article.coAuthors.map(c => ({ academic_title: c.academic_title || '', firstname: c.firstname, lastname: c.lastname })) : [],
       rights: article.publish_status as 'public' | 'private' || 'private',
     }
   });
@@ -195,7 +197,7 @@ const EditArticleFeature = ({ article }: { article: ArticleWithContributor }) =>
           {serverError && ( <div className="p-4 my-4 text-sm text-red-800 rounded-lg bg-red-100 text-center">{serverError}</div> )}
           
           <div className="pt-4 flex flex-col sm:flex-row gap-3 justify-end">
-            <button type="button" onClick={() => router.back()} className="btn btn-ghost sm:w-40">ยกเลิก</button>
+            <button type="button" onClick={() => router.push(`/articlemanagement/${article.userId}`)} className="btn btn-ghost sm:w-40">ยกเลิก</button>
             <button type="submit" disabled={isSubmitting || !isDirty} className="btn btn-primary sm:w-40">
               {isSubmitting ? 'กำลังบันทึก...' : 'บันทึกการแก้ไข'}
             </button>

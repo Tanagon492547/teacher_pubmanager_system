@@ -29,12 +29,15 @@ export async function GET(
 
     // 2. ใช้ Prisma เพื่อค้นหาบทความทั้งหมดที่มี userId ตรงกับที่เราต้องการ
     const articles = await prisma.articleDB.findMany({
-      where: {
-        userId: userId,
+      where: { userId },
+      orderBy: { id: 'desc' }, // เรียงจากบทความล่าสุดก่อน
+      include: {
+        // ดึงประวัติสถานะล่าสุด (ถ้ามี) เพื่อใช้เป็นวันที่อัปโหลด/บันทึก
+        statusHistory: {
+          orderBy: { save_history: 'desc' },
+          take: 1,
+        },
       },
-      orderBy: {
-        id: 'desc', // เรียงจากบทความล่าสุดก่อน
-      }
     });
 
     // 3. ถ้าหาบทความไม่เจอเลย ก็ให้ส่ง array ว่างๆ กลับไป
@@ -44,17 +47,19 @@ export async function GET(
     }
 
     // 4. จัดรูปแบบข้อมูล (map) ให้อยู่ในรูปแบบ ArticleData ที่เราต้องการ
-    const formattedArticles: ArticleData[] = articles.map(article => {
+    const formattedArticles: ArticleData[] = articles.map((article: any) => {
+      // If we have a statusHistory entry (latest), prefer its save_history as the uploadDate.
+      const latestHistory = article.statusHistory && article.statusHistory.length > 0 ? article.statusHistory[0] : null;
+      const uploadDate = latestHistory && latestHistory.save_history
+        ? new Date(latestHistory.save_history).toISOString()
+        : article.published_date
+        ? new Date(article.published_date).toISOString()
+        : new Date().toISOString();
+
       return {
         articleId: article.id,
         article_name: article.article_name,
-        
-        // --- ส่วนที่แก้ไขตามคำขอ ---
-        // เนื่องจากตอนนี้เรายังไม่มีข้อมูลวันที่อัปโหลดในฐานข้อมูล
-        // พี่ข้าวจึงใส่เป็น "ข้อมูลสมมติ" (วันที่ปัจจุบัน) ให้แทนนะเหมียว
-        uploadDate: new Date().toISOString(),
-        // -----------------------------
-
+        uploadDate,
         published_year: String(article.published_year || 'N/A'),
         articleType: article.articleType || 'N/A',
         article_status: article.article_status || 'N/A',
