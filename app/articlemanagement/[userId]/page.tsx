@@ -74,7 +74,7 @@ const ArticlemanagementPage = () => {
                 <option>Amber</option>
                 <option>Velvet</option>
               </select>
-            </div>  
+            </div>
           </div>
         </div>
       

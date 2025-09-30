@@ -8,6 +8,7 @@ type UserData = {
   name: string;
   type: string;
   detail: string;
+  login_check_date: string; // always present (empty string if no login recorded)
 };
 
 const UserManagement = () => {
