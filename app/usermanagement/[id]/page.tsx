@@ -4,12 +4,20 @@ import { useRouter, useParams } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 
 type Form = {
-  username: string
-  password: string
-  user_name: string
-  user_fame: string
-  user_typeid?: string
-  age?: number
+  title?: string;
+  firstName?: string;
+  lastName?: string;
+  gender?: string;
+  position?: string;
+  faculty?: string;
+  department?: string;
+  email?: string;
+  username?: string;
+  password?: string;
+  role?: string;
+  age?: number;
+  number_phone?: string;
+  academic?: string;
 }
 
 const EditUserPage: React.FC = () => {
@@ -25,14 +33,27 @@ const EditUserPage: React.FC = () => {
         const res = await fetch(`/api/users/${id}`)
         if (!res.ok) throw new Error('Failed to fetch')
         const json = await res.json()
-        // map fields (user_type is nested under personal.user_type)
+
+        // Normalize personal fields into createuser-compatible names
+        const personal = json.personal || {}
+        const [firstName, ...rest] = (personal.user_name || '').split(' ')
+        const lastName = rest.join(' ')
+
         reset({
-          username: json.username,
-          password: json.password,
-          user_name: json.personal?.user_name || '',
-          user_fame: json.personal?.user_fame || '',
-          user_typeid: json.personal?.user_type?.id ? String(json.personal.user_type.id) : '',
-          age: json.personal?.age ?? undefined
+          title: personal.user_fame || '',
+          firstName: firstName || '',
+          lastName: lastName || '',
+          gender: personal.gender || '',
+          position: personal.academic || '',
+          faculty: personal.faculty || '',
+          department: personal.department || '',
+          email: personal.email || '',
+          username: json.username || '',
+          password: json.password || '',
+          role: personal.user_type ? (personal.user_type.user_typename === 'Admin' ? 'admin' : personal.user_type.user_typename === 'เจ้าหน้าที่' ? 'staff' : 'teacher') : '',
+          age: personal.age ?? undefined,
+          number_phone: personal.number_phone || '',
+          academic: personal.academic || ''
         })
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err)
@@ -46,18 +67,27 @@ const EditUserPage: React.FC = () => {
     setLoading(true)
     try {
       const payload = {
-        ...data,
-        user_typeid: data.user_typeid ? Number(data.user_typeid) : undefined
+        username: data.username,
+        password: data.password,
+        user_name: `${data.firstName || ''} ${data.lastName || ''}`.trim(),
+        user_fame: data.title,
+        userTypeId: data.role === 'admin' ? 1 : data.role === 'staff' ? 2 : 3,
+        age: data.age ?? null,
+        email: data.email,
+        number_phone: data.number_phone,
+        academic: data.academic,
+        faculty: data.faculty,
+        department: data.department
       }
-      // debug
-      // eslint-disable-next-line no-console
-      console.log('PUT payload', payload)
+
       const res = await fetch(`/api/users/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       })
-      if (!res.ok) throw new Error('Failed to save')
+      const json = await res.json()
+      if (!res.ok) throw new Error(json?.error || 'Failed to save')
+
       alert('บันทึกสำเร็จ')
       router.push('/usermanagement')
     } catch (err) {
@@ -86,34 +116,85 @@ const EditUserPage: React.FC = () => {
       <div className="w-full max-w-3xl bg-white rounded-lg shadow p-6">
         <h2 className="text-xl font-semibold mb-4">แก้ไขผู้ใช้</h2>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <label className="text-sm">คำนำหน้า</label>
+              <select {...register('title')} className="mt-1 block w-full border rounded p-2 bg-white">
+                <option value="">เลือก</option>
+                <option value="นาย">นาย</option>
+                <option value="นาง">นาง</option>
+                <option value="นางสาว">นางสาว</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-sm">ชื่อ</label>
+              <input {...register('firstName')} className="w-full border rounded p-2 mt-1" />
+            </div>
+            <div>
+              <label className="text-sm">นามสกุล</label>
+              <input {...register('lastName')} className="w-full border rounded p-2 mt-1" />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <label className="text-sm">เพศ</label>
+              <select {...register('gender')} className="mt-1 block w-full border rounded p-2 bg-white">
+                <option value="">ไม่ระบุ</option>
+                <option value="ชาย">ชาย</option>
+                <option value="หญิง">หญิง</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-sm">อายุ</label>
+              <input type="number" {...register('age', { valueAsNumber: true })} className="w-full border rounded p-2 mt-1" />
+            </div>
+            <div>
+              <label className="text-sm">ตำแหน่งทางวิชาการ</label>
+              <input {...register('academic')} className="w-full border rounded p-2 mt-1" />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <label className="text-sm">คณะ</label>
+              <input {...register('faculty')} className="w-full border rounded p-2 mt-1" />
+            </div>
+            <div>
+              <label className="text-sm">เบอร์โทรศัพท์</label>
+              <input {...register('number_phone')} className="w-full border rounded p-2 mt-1" />
+            </div>
+            <div>
+              <label className="text-sm">สาขา/หน่วยงาน</label>
+              <input {...register('department')} className="w-full border rounded p-2 mt-1" />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="text-sm">Email</label>
+              <input {...register('email')} type="email" className="w-full border rounded p-2 mt-1" />
+            </div>
             <div>
               <label className="text-sm">Username</label>
-              <input {...register('username', { required: 'กรุณากรอกชื่อผู้ใช้' })} className="w-full border rounded p-2 mt-1" />
+              <input {...register('username')} className="w-full border rounded p-2 mt-1" />
             </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="text-sm">Password</label>
-              <input {...register('password', { required: 'กรุณากรอกรหัสผ่าน' })} className="w-full border rounded p-2 mt-1" />
+              <input {...register('password')} className="w-full border rounded p-2 mt-1" />
             </div>
-          <div>
-            <label className="text-sm">ชื่อ-สกุล</label>
-            <input {...register('user_name')} className="w-full border rounded p-2 mt-1" />
-          </div>
-          <div>
-            <label className="text-sm">คำนำหน้า</label>
-            <input {...register('user_fame')} className="w-full border rounded p-2 mt-1" />
-          </div>
-          <div>
-            <label className="text-sm">ประเภทผู้ใช้</label>
-            <select {...register('user_typeid')} className="w-full border rounded p-2 mt-1">
-              <option value="">เลือกประเภท</option>
-              <option value="1">Admin</option>
-              <option value="2">เจ้าหน้าที่</option>
-              <option value="3">อาจารย์</option>
-            </select>
-          </div>
-          <div>
-            <label className="text-sm">อายุ</label>
-            <input type="number" {...register('age')} className="w-full border rounded p-2 mt-1" />
+            <div>
+              <label className="text-sm">ประเภทผู้ใช้</label>
+              <select {...register('role')} className="w-full border rounded p-2 mt-1">
+                <option value="">เลือก</option>
+                <option value="admin">Admin</option>
+                <option value="staff">เจ้าหน้าที่</option>
+                <option value="teacher">อาจารย์</option>
+              </select>
+            </div>
           </div>
 
           <div className="flex justify-end gap-3">
