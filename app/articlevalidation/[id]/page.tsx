@@ -5,7 +5,7 @@ import { notFound } from 'next/navigation';
 async function getArticle(id: number) {
   const article = await prisma.articleDB.findUnique({
     where: { id },
-    include: { contributor: true },
+    include: { contributor: true, coAuthors: true },
   });
   return article;
 }
@@ -31,6 +31,11 @@ const ReviewPage = async ({ params }: { params: { id: string } }) => {
       contributor_name: article.contributor.contributor_name,
       academic_title: article.contributor.academic_title,
     } : null,
+    coAuthors: Array.isArray(article.coAuthors) && article.coAuthors.length > 0 ? article.coAuthors.map((c: any) => ({
+      academic_title: c.academic_title,
+      firstname: c.firstname,
+      lastname: c.lastname,
+    })) : [],
   };
 
   return (

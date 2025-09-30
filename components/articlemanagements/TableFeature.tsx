@@ -10,6 +10,7 @@ type tableHerdersType = {
   pathName: string | undefined, // จะทำตัวเช็คหน้าที่ส่งเข้ามา
   index: number | undefined,
   title: string | undefined,
+  athor?: string | undefined,
   uploadDate: string | undefined,
   publishYear: string | undefined,
   type: string | undefined,
@@ -17,15 +18,34 @@ type tableHerdersType = {
   articleId?: number,
 }
 
-const TableFeature = ({ pathName, index, title, uploadDate, publishYear, type, status, articleId }: tableHerdersType) => {
+const TableFeature = ({ pathName, index, title, athor, uploadDate, publishYear, type, status, articleId }: tableHerdersType) => {
     const router =  useRouter();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const handleConfirmDelete = async () => {
-
-    // if(articleId){
-    //   const result = await getDeleteForm(articleId);
-    // }
-  };
+      // Called when user confirms deletion in the modal
+      if (!articleId) {
+        setIsModalOpen(false);
+        return;
+      }
+      try {
+        const result = await getDeleteForm(articleId);
+        if (result.success) {
+          alert(result.message);
+          try {
+            router.refresh();
+          } catch (e) {
+            console.warn('router.refresh() failed', e);
+          }
+        } else {
+          alert(`เกิดข้อผิดพลาด: ${result.error}`);
+        }
+      } catch (e) {
+        console.error('Delete failed', e);
+        alert('เกิดข้อผิดพลาดในการลบ');
+      } finally {
+        setIsModalOpen(false);
+      }
+    };
   const getButtonClass = (status: any) => {
     if (status === 'กำลังตรวจ') {
       return "btn bg-[var(--color-warning)]/70 text-[var(--color-success-content)]";
@@ -46,11 +66,34 @@ const TableFeature = ({ pathName, index, title, uploadDate, publishYear, type, s
     // router.replace(`/editArticle/${articleId}`)
   }
 
+  // Format ISO/Date string into Thailand time (Asia/Bangkok) without seconds/milliseconds
+  const formatUploadDateToBangkok = (iso?: string | null) => {
+    if (!iso) return '—';
+    try {
+      const dt = new Date(iso);
+      if (isNaN(dt.getTime())) return '—';
+      // Use Intl.DateTimeFormat to convert to Asia/Bangkok and omit seconds
+      return new Intl.DateTimeFormat('th-TH', {
+        timeZone: 'Asia/Bangkok',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+      }).format(dt);
+    } catch (e) {
+      return '—';
+    }
+  };
+
   return (
     <tr key={index}>
       <td className="w-10 text-center">{index}</td>
-      <td className="">{title}</td>
-      <td className="w-10 text-center">{uploadDate}</td>
+      <td className="">
+        <div className="font-semibold">{title}</div>
+        <div className="text-sm text-gray-500">{(athor) || 'ไม่ระบุ'}</div>
+      </td>
+  <td className="w-10 text-center">{formatUploadDateToBangkok(uploadDate)}</td>
       <td className="w-10 text-center">{publishYear}</td>
       <td className="w-10 text-center overflow-hidden text-ellipsis whitespace-nowrap">{type}</td>
       <td className="w-10 text-center"><span className={`w-30 p-2 rounded-full  ${getButtonClass(status)}`}>{status}</span></td>
@@ -64,27 +107,17 @@ const TableFeature = ({ pathName, index, title, uploadDate, publishYear, type, s
         </button>
       </td>
       <td className="w-10 text-center">
-        <button  onClick={async () => {
-            // 1. แสดงกล่องคำถามขึ้นมาก่อน
-            const confirmed = window.confirm(
-              `คุณแน่ใจจริงๆ หรือว่าจะลบบทความ "${title}"?`
-            );
-
-            // 2. ถ้าผู้ใช้กด "OK" (confirmed === true)
-            if (confirmed) {
-              // 3. ก็ให้เรียก Server Action เพื่อลบข้อมูลได้เลย
-              if(articleId){
-                const result = await getDeleteForm(articleId);
-
-              // 4. (ทางเลือก) แสดง alert ง่ายๆ บอกผลลัพธ์
-              if (result.success) {
-                alert(result.message);
-              } else {
-                alert(`เกิดข้อผิดพลาด: ${result.error}`);
-              }
-              }
-            }
-          }} className={`btn btn-ghost rounded-xl ${status === 'เสร็จสิ้น' ? 'btn-disabled' : ''} `}><i className="fa-solid fa-trash text-(--color-error)"></i></button></td>
+        <button onClick={() => setIsModalOpen(true)} className={`btn btn-ghost rounded-xl ${status === 'เสร็จสิ้น' ? 'btn-disabled' : ''} `}>
+          <i className="fa-solid fa-trash text-(--color-error)"></i>
+        </button>
+        <ConfirmDeleteModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onConfirm={handleConfirmDelete}
+          title="ยืนยันการลบ"
+          message={`คุณแน่ใจจริงๆ หรือว่าจะลบบทความ "${title}"?`}
+        />
+      </td>
     </tr>
   )
 };

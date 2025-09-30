@@ -20,6 +20,8 @@ model UserAuthentication {
 model Login {
   id     Int                @id @default(autoincrement())
   userId Int                @unique
+  // last time the user successfully logged in (optional)
+  login_check_date DateTime?
   user   UserAuthentication @relation(fields: [userId], references: [id])
 }
 
@@ -64,12 +66,14 @@ model ArticleDB {
   article_status String?
   publish_status String?
   published_year Int?
+  published_date DateTime?
   articleType    String?
   contributorId  Int?
   abstract       String?
   userId         Int
   user           UserAuthentication     @relation(fields: [userId], references: [id])
   contributor    Contributor?           @relation(fields: [contributorId], references: [id])
+  coAuthors      CoAuthor[]
   statusHistory  ArticleStatusHistory[]
   categories     Category[]
 
@@ -105,6 +109,17 @@ model Category {
   articleId Int
   summary   String?
   article   ArticleDB @relation(fields: [articleId], references: [id])
+
+  @@index([articleId])
+}
+
+model CoAuthor {
+  id             Int       @id @default(autoincrement())
+  articleId      Int
+  academic_title String?
+  firstname      String
+  lastname       String
+  article        ArticleDB @relation(fields: [articleId], references: [id])
 
   @@index([articleId])
 }

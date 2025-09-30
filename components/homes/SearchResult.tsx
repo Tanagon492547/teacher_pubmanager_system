@@ -25,6 +25,7 @@ interface ArticlesListAPIItem {
   academicTitle: string | null;
   firstName: string;
   lastName: string;
+  contributorName?: string | null;
   faculty: string | null;
   department: string | null;
   abstract: string | null;
@@ -67,7 +68,7 @@ const SearchResult = () => {
         const formattedData: DisplayArticle[] = apiData.items.map((article) => ({
           id: String(article.articleId),
             title: article.articleName,
-            athor: `${article.firstName} ${article.lastName}`,
+            athor: (article.contributorName && article.contributorName.trim() !== '') ? article.contributorName : `${article.firstName} ${article.lastName}`,
             field: article.academicTitle,
             offset: article.department,
             url: article.downloadPath,
@@ -120,11 +121,6 @@ const SearchResult = () => {
 
       <div className="w-full">
         <PaginationFeature pathName="/" mockData={articles} rowsValue={10} />
-      </div>
-      <div className="w-full flex justify-center gap-4 mt-6">
-        <button disabled={page === 1 || isLoading} onClick={() => setPage(p => Math.max(1, p - 1))} className="btn btn-sm" >ก่อนหน้า</button>
-        <span>หน้า {page} / {totalPages || 1}</span>
-        <button disabled={page === totalPages || isLoading} onClick={() => setPage(p => (p < totalPages ? p + 1 : p))} className="btn btn-sm" >ถัดไป</button>
       </div>
     </div>
   );

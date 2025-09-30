@@ -2,25 +2,30 @@
 import React, { useState } from "react";
 import { useRouter } from 'next/navigation'
 import { useForm } from "react-hook-form";
+import { AnimatePresence } from "framer-motion"; // <--- เพิ่มการ import AnimatePresence
+import Notification from "@/components/Notification";
 
 type UserForm = {
-title: string;
-firstName: string;
-lastName: string;
-gender: string;
-position: string;
-faculty: string;
-department: string;
-email: string;
-username: string;
-password: string;
-role: string;
- age?: number;
+  title?: string;
+  firstName?: string;
+  lastName?: string;
+  gender?: string;
+  position?: string;
+  faculty?: string;
+  department?: string;
+  email?: string;
+  username?: string;
+  password?: string;
+  role?: string;
+  age?: number;
+  number_phone?: string;
+  academic?:string;
 };
 
 const UserManagement: React.FC = () => {
   const { register, handleSubmit, formState: { errors } } = useForm<UserForm>();
   const [preview, setPreview] = useState<string | null>(null);
+  const [notification, setNotification] = useState<{ title: string, status: string, error:boolean } | null>(null); // <--- เพิ่ม state สำหรับแจ้งเตือน
 
   const router = useRouter()
   const [loading, setLoading] = React.useState(false)
@@ -33,8 +38,14 @@ const UserManagement: React.FC = () => {
         password: data.password,
         user_name: `${data.firstName} ${data.lastName}`,
         user_fame: data.title,
-        user_typeid: data.role === 'admin' ? 1 : data.role === 'staff' ? 2 : 3,
-        age: data.age ?? null
+        userTypeId: data.role === 'admin' ? 1 : data.role === 'staff' ? 2 : 3,
+        age: data.age ?? null,
+        email : data.email,
+        number_phone : data.number_phone,
+        academic : data.academic,
+        faculty : data.faculty,
+        department : data.department,
+
       }
       const res = await fetch('/api/users', {
         method: 'POST',
@@ -42,11 +53,22 @@ const UserManagement: React.FC = () => {
         body: JSON.stringify(payload)
       })
       const json = await res.json()
-  if (!res.ok) throw new Error(json?.error || 'Failed to create user')
-  alert('บันทึกข้อมูลสำเร็จ')
-  router.push('/usermanagement')
+      if (!res.ok) throw new Error(json?.error || 'Failed to create user')
+      
+      // <--- แทนที่ alert ด้วยการตั้งค่า state ของ Notification
+      setNotification({ title: 'บันทึกข้อมูลสำเร็จ', status: 'การบันทึกข้อมูลผู้ใช้ใหม่สำเร็จแล้วค่ะ' , error:false  });
+      
+      setTimeout(() => {
+        setNotification(null);
+        router.push('/usermanagement')
+      }, 5000); // แสดงแจ้งเตือน 3 วินาทีแล้วนำไปหน้าอื่น
     } catch (err: any) {
-      alert(err.message || 'เกิดข้อผิดพลาด')
+      // <--- แทนที่ alert ด้วยการตั้งค่า state ของ Notification
+      setNotification({ title: 'เกิดข้อผิดพลาด', status: err.message || 'ไม่สามารถบันทึกข้อมูลได้', error:true  });
+      
+      setTimeout(() => {
+        setNotification(null);
+      }, 3000);
     } finally {
       setLoading(false)
     }
@@ -156,11 +178,15 @@ const UserManagement: React.FC = () => {
               </div>
               <div>
                 <label className="text-sm text-slate-600">ตำแหน่งทางวิชาการ</label>
-                <input {...register("position")} placeholder="ตำแหน่ง" className="mt-1 block w-full border rounded p-2" />
+                <input {...register("academic")} placeholder="ตำแหน่ง" className="mt-1 block w-full border rounded p-2" />
               </div>
               <div>
                 <label className="text-sm text-slate-600">คณะ</label>
                 <input {...register("faculty")} placeholder="คณะ" className="mt-1 block w-full border rounded p-2" />
+              </div>
+              <div>
+                <label className="text-sm text-slate-600">เบอร์โทรศัพท์</label>
+                <input {...register("number_phone")} placeholder="เบอร์โทรศัพท์" className="mt-1 block w-full border rounded p-2" />
               </div>
             </div>
 
@@ -200,9 +226,12 @@ const UserManagement: React.FC = () => {
           </form>
         </div>
       </div>
+
+      <AnimatePresence>
+        {notification && <Notification title={notification.title} status={notification.status} />}
+      </AnimatePresence>
     </div>
   );
 };
 
 export default UserManagement;
-

@@ -1,15 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '../../../lib/prisma'; // ใช้ prisma client กลาง
 
-// Type for dynamic where clause (narrow union of allowed filters)
+// Type for dynamic where clause
 interface ArticleListWhere {
-  article_status?: string;
+  article_status?: string; // <-- สถานะเป็น optional: ถ้ามีจะกรองตามสถานะ ถ้าไม่มีจะใช้ default
   published_year?: number;
   OR?: { article_name?: { contains: string; mode: 'insensitive' } ; abstract?: { contains: string; mode: 'insensitive' } }[];
 }
 
-// 1. สร้าง "เมนูอาหาร" (Type) ฉบับใหม่ของเรา!
-//    นี่คือหน้าตาข้อมูลแบบจัดเต็มที่เราต้องการ
+// ... (Type DetailedArticleListItem เหมือนเดิม) ...
 export type DetailedArticleListItem = {
   articleId: number;
   articleName: string;
@@ -18,35 +17,43 @@ export type DetailedArticleListItem = {
   academicTitle: string | null;
   firstName: string;
   lastName: string;
+  contributorName?: string | null;
   faculty: string | null;
   department: string | null;
   abstract: string | null;
   downloadPath: string | null;
-  article_status: string | null; // current workflow status
+  article_status: string | null;
 };
 
-// ฟังก์ชัน GET นี้จะทำงานเมื่อมีการเรียกมาที่ /api/articles-list
+
 export async function GET(req: NextRequest) {
   try {
-    // Pagination & filter params
     const { searchParams } = new URL(req.url);
     const page = Math.max(1, Number(searchParams.get('page') || '1'));
-    const pageSize = Math.min(100, Math.max(1, Number(searchParams.get('pageSize') || '50'))); // default 50
-    const status = searchParams.get('status');
-    const q = searchParams.get('q'); // free text search (simple LIKE)
+    const pageSize = Math.min(100, Math.max(1, Number(searchParams.get('pageSize') || '50')));
+    const q = searchParams.get('q');
     const year = searchParams.get('year');
 
-  const where: ArticleListWhere = {};
-    if (status) where.article_status = status;
+    // หาก client ส่ง ?status=... มา ให้ใช้ค่านั้นเป็นเงื่อนไขการกรอง
+    // ถ้าไม่มี ให้ใช้ default 'approved' (เพื่อไม่กระทบหน้าอื่นๆ ที่เรียก API นี้)
+    const status = searchParams.get('status');
+    const where: ArticleListWhere = {};
+    if (status) {
+      where.article_status = status;
+    } else {
+      where.article_status = 'approved';
+    }
+
+    // ส่วนการกรองอื่นๆ ยังทำงานได้เหมือนเดิมนะ
     if (year) where.published_year = Number(year);
     if (q) {
-      // Simple OR search across a few text columns
       where.OR = [
         { article_name: { contains: q, mode: 'insensitive' } },
         { abstract: { contains: q, mode: 'insensitive' } },
       ];
     }
 
+    // --- ส่วนที่เหลือของโค้ดทำงานเหมือนเดิมเป๊ะๆ เลยจ้ะ ---
     const [total, articles] = await Promise.all([
       prisma.articleDB.count({ where }),
       prisma.articleDB.findMany({
@@ -70,7 +77,17 @@ export async function GET(req: NextRequest) {
 
     type ArticleRow = typeof articles[number];
     const formattedArticles: DetailedArticleListItem[] = articles.map((article: ArticleRow) => {
-      const [firstName, lastName] = (article.contributor?.contributor_name || 'N/A').split(' ');
+      // helper: safely parse contributor_name into first/last while sanitizing literal 'null' strings
+      const parseName = (name?: string | null) => {
+        if (!name) return ['', ''];
+        const parts = name.trim().split(/\s+/).map(p => (String(p).toLowerCase() === 'null' || String(p).toLowerCase() === 'undefined' ? '' : p));
+        const first = parts[0] || '';
+        const last = parts.slice(1).join(' ') || '';
+        return [first, last];
+      };
+
+      const [firstName, lastName] = parseName(article.contributor?.contributor_name ?? '');
+      const contributorName = article.contributor?.contributor_name ?? '';
       const personalInfo = article.user?.personal;
       return {
         articleId: article.id,
@@ -78,8 +95,9 @@ export async function GET(req: NextRequest) {
         publishedYear: article.published_year,
         articleType: article.articleType,
         academicTitle: article.contributor?.academic_title ?? null,
-        firstName: firstName || 'N/A',
+        firstName: firstName || '',
         lastName: lastName || '',
+        contributorName: contributorName || null,
         faculty: personalInfo?.faculty ?? null,
         department: personalInfo?.department ?? null,
         abstract: article.abstract,
