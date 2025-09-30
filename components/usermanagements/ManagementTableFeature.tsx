@@ -8,6 +8,7 @@ type user = {
   description: string | undefined,
   loginDate: string | undefined,
   id: number,
+  
 }
 
 const ManagementTableFeature = ({ id, name, email, type, description, loginDate }: user) => {

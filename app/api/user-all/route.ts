@@ -1,16 +1,14 @@
-import { PrismaClient } from '@prisma/client';
 import { NextResponse } from 'next/server';
-
-const prisma = new PrismaClient();
+import prisma from '../../../lib/prisma'; // <-- ส่วนที่ปรับปรุง: ใช้ prisma client กลางดีที่สุดนะ!
 
 // สร้าง Type สำหรับข้อมูลที่เราต้องการจะแสดงผล
 export type FormattedUser = {
   userId: number;
   name: string;
-  // email: string | null;
+  email: string | null; // <-- พี่ข้าวเปิดให้ใช้ email ด้วยนะ
   type: string;
   detail: string;
-  // login_check_date ถูกลบออกไปแล้ว
+  login_check_date? : string
 };
 
 // ย้ายฟังก์ชัน getAllUsers มาไว้ในไฟล์นี้เลย
@@ -24,7 +22,7 @@ export async function getAllUsers(): Promise<FormattedUser[]> {
             user_type: true,
           },
         },
-        // เราไม่จำเป็นต้อง include: login แล้ว เพราะไม่ได้ใช้ข้อมูลจากตารางนั้น
+        login: true,
       },
     });
 
@@ -35,10 +33,11 @@ export async function getAllUsers(): Promise<FormattedUser[]> {
       return {
         userId: user.id,
         name: personalInfo?.user_name || 'N/A',
-        // email: personalInfo?.email || "null",
-        type: personalInfo?.user_type.user_typename || 'N/A',
+        email: personalInfo?.email || null,
+        // **ส่วนที่แก้ไข!** //
+        // เปลี่ยนจาก user_Type (T ใหญ่) ให้เป็น user_type (t เล็ก) นะเหมียว!
+        type: personalInfo?.user_type?.user_typename || 'N/A',
         detail: `Username: ${user.username}, Title: ${personalInfo?.user_fame || '-'}`,
-        // login_check_date ถูกลบออกไปแล้ว
       };
     });
 
