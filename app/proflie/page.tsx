@@ -10,15 +10,15 @@ type ProfileData = {
   id: number;
   username: string;
   personal: {
-    user_name: string;
+    user_name: string | null;
     user_fame: string | null;
-    gender?:string;
-    faculty? : string;
-    department?: string;
-    number_phone?: string;
-    email? : string;
-    image_user? : string;
-    academic?:string;
+    gender?: string;
+    faculty?: string | null;
+    department?: string | null;
+    number_phone?: string | null;
+    email?: string | null;
+    image_user?: string | null;
+    academic?: string | null;
     // ... field อื่นๆ จาก personal ...
   } | null;
 };
@@ -72,7 +72,14 @@ const ProfilePage = () => {
   }
 
   // แยกชื่อ-นามสกุลออกจากกัน (ถ้ามี) และป้องกัน error กรณี user_name เป็น null
-  const [firstName, lastName] = profile.personal?.user_name?.split(' ') ?? ['N/A', ''];
+  const parseNameSafe = (name?: string | null) => {
+    if (!name) return ['N/A', ''];
+    const parts = name.trim().split(/\s+/).map(p => (String(p).toLowerCase() === 'null' || String(p).toLowerCase() === 'undefined' ? '' : p));
+    const first = parts[0] || 'N/A';
+    const last = parts.slice(1).join(' ') || '';
+    return [first, last];
+  };
+  const [firstName, lastName] = parseNameSafe(profile.personal?.user_name ?? '');
 
   return (
     <div className="bg-gray-100 min-h-screen p-8">

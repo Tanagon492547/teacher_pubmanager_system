@@ -72,16 +72,18 @@ export async function PUT(
     if (body.department) personalData.department = body.department;
     
     // **ส่วนที่แก้ไข!** จัดการความสัมพันธ์กับ UserType ให้ถูกต้อง
-    if (body.user_typename) {
-        const userType = await prisma.userType.findFirst({
-            where: { user_typename: body.user_typename }
-        });
-        if(userType) {
-            personalData.user_type = {
-                connect: { userTypeId: userType.userTypeId }
-            }
-        }
+  // allow connecting by either userTypeId (numeric) or user_typename (string)
+  if (body.userTypeId || body.user_typeid) {
+    const uid = Number(body.userTypeId ?? body.user_typeid);
+    if (!isNaN(uid)) {
+      personalData.user_type = { connect: { userTypeId: uid } };
     }
+  } else if (body.user_typename) {
+    const userType = await prisma.userType.findFirst({ where: { user_typename: body.user_typename } });
+    if (userType) {
+      personalData.user_type = { connect: { userTypeId: userType.userTypeId } };
+    }
+  }
     
     // 3. อัปเดตหรือสร้างข้อมูล Personal
     await prisma.personal.upsert({

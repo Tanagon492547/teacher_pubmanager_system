@@ -19,6 +19,26 @@ const ArticleDetails = ({ article }: any) => {
     visible: { opacity: 1, y: 0 },
   };
 
+  // normalize some field names to support both API shapes
+  const title = article?.title || article?.article_name || 'ไม่มีชื่อบทความ';
+  const type = article?.type || article?.articleType || 'วารสาร';
+  // Prefer uploadDate (calculated on server) for consistency with article-management page
+  const rawDate = article?.uploadDate || article?.publishedDate || article?.published_date || article?.published_year || null;
+  let publishedDate = '-';
+  try {
+    if (rawDate) {
+      // if rawDate is a year (number) show it directly
+      if (typeof rawDate === 'number' || /^[0-9]{4}$/.test(String(rawDate))) {
+        publishedDate = String(rawDate);
+      } else {
+        const d = new Date(rawDate);
+        if (!isNaN(d.getTime())) publishedDate = d.toLocaleString();
+      }
+    }
+  } catch (e) {
+    publishedDate = String(rawDate ?? '-');
+  }
+
   return (
     <motion.div
       className="w-full flex flex-col justify-center items-center px-4 py-10"
@@ -60,7 +80,7 @@ const ArticleDetails = ({ article }: any) => {
             >
               <Image
                 src={article?.imageUrl || "/depositphotos_89250312-stock-illustration-photo-picture-web-icon-in.jpg"}
-                alt={article?.title || "รูปบทความ"}
+                alt={title}
                 className='rounded-lg'
                 width={182}
                 height={222}
@@ -75,7 +95,7 @@ const ArticleDetails = ({ article }: any) => {
                 className='text-5xl'
                 variants={itemVariants}
               >
-                {article?.title || "ไม่มีชื่อบทความ"}
+                {title}
               </motion.p>
               <motion.div
                 className='flex gap-5'
@@ -85,12 +105,12 @@ const ArticleDetails = ({ article }: any) => {
                   className="badge badge-success text-lg"
                   variants={itemVariants}
                 >
-                  {article?.type || "วารสาร"}
+                  {type}
                 </motion.div>
                 <motion.p
                   variants={itemVariants}
                 >
-                  เผยแพร่เมื่อวันที่ {article?.publishedDate || "-"}
+                  เผยแพร่เมื่อวันที่ {publishedDate || "-"}
                 </motion.p>
               </motion.div>
               <motion.p
@@ -140,7 +160,7 @@ const ArticleDetails = ({ article }: any) => {
               <DownloadCard url={article.article_file} />
             </motion.div>
           </motion.div>
-          <ContributorCard />
+          <ContributorCard article={article} />
         </motion.div>
       </motion.div>
     </motion.div>

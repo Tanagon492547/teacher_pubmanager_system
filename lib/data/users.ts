@@ -22,7 +22,14 @@ export async function getCurrentUserAuthorData(): Promise<AuthorData | null> {
       select: { user_fame: true, user_name: true },
     });
     if (!personalInfo) return null;
-    const [firstname, lastname] = personalInfo.user_name?.split(' ') ?? ['', ''];
+    const parseNameSafe = (name?: string | null) => {
+      if (!name) return ['', ''];
+      const parts = name.trim().split(/\s+/).map(p => (String(p).toLowerCase() === 'null' || String(p).toLowerCase() === 'undefined' ? '' : p));
+      const first = parts[0] || '';
+      const last = parts.slice(1).join(' ') || '';
+      return [first, last];
+    };
+    const [firstname, lastname] = parseNameSafe(personalInfo.user_name ?? '');
     return {
       academic_title: personalInfo.user_fame || '',
       firstname: firstname,

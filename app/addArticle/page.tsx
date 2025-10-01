@@ -10,11 +10,14 @@ import AddArticleFeature from '@/components/addArticle/AddArticleFeature';
 
 
 
+
 const ArticleForm  =  () => {
 
   return (
+    
     <AddArticleFeature  />
   )
 };
 
 export default ArticleForm;
+
